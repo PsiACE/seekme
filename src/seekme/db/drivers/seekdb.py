@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 import importlib
 import os
 import re
+from collections.abc import Mapping
 from typing import Any
 from urllib.parse import parse_qs, unquote, urlparse
 
@@ -30,7 +30,7 @@ class SeekdbDatabase(Database):
         path = kwargs.pop("path", path)
         database = kwargs.pop("database", database)
         if kwargs:
-            raise ValidationError(f"Unsupported seekdb options: {sorted(kwargs)}")
+            raise ValidationError.unsupported_seekdb_options(sorted(kwargs))
         return cls(path=path, database=database)
 
     def connect(self) -> None:
@@ -126,7 +126,7 @@ def _load_seekdb():
 def _ensure_data_path(path: str) -> None:
     if os.path.exists(path):
         if not os.path.isdir(path):
-            raise ValidationError(f"Seekdb path is not a directory: {path}")
+            raise ValidationError.seekdb_path_not_directory(path)
         return
     os.makedirs(path, exist_ok=True)
 
@@ -142,13 +142,13 @@ def _open_seekdb(seekdb: Any, path: str) -> None:
         _OPENED_PATH = path
         return
     if os.path.abspath(path) != os.path.abspath(_OPENED_PATH):
-        raise ValidationError(f"Seekdb already opened at: {_OPENED_PATH}")
+        raise ValidationError.seekdb_already_opened(_OPENED_PATH)
 
 
 def _parse_seekdb_url(url: str) -> tuple[str, str]:
     parsed = urlparse(url)
     if parsed.scheme != "seekdb":
-        raise ValidationError(f"Invalid seekdb URL: {url}")
+        raise ValidationError.invalid_seekdb_url(url)
     raw_path = parsed.netloc + parsed.path
     path = unquote(raw_path).lstrip("/") or "seekdb.db"
     query = parse_qs(parsed.query)
@@ -159,11 +159,13 @@ def _parse_seekdb_url(url: str) -> tuple[str, str]:
 def _render_sql(sql: str, params: Mapping[str, Any] | None) -> str:
     if not params:
         return sql
+
     def replace(match: re.Match[str]) -> str:
         name = match.group(1)
         if name not in params:
-            raise ValidationError(f"Missing SQL parameter: {name}")
+            raise ValidationError.missing_sql_parameter(name)
         return _sql_literal(params[name])
+
     return _PARAM_RE.sub(replace, sql)
 
 

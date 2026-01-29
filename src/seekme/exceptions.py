@@ -132,6 +132,26 @@ class ValidationError(ValueError, SeekMeError):
     def metadata_serialization_failed(cls) -> ValidationError:
         return cls("Metadata must be JSON serializable.")
 
+    @classmethod
+    def invalid_seekdb_url(cls, url: str) -> ValidationError:
+        return cls(f"Invalid seekdb URL: {url}")
+
+    @classmethod
+    def seekdb_path_not_directory(cls, path: str) -> ValidationError:
+        return cls(f"Seekdb path is not a directory: {path}")
+
+    @classmethod
+    def seekdb_already_opened(cls, path: str) -> ValidationError:
+        return cls(f"Seekdb already opened at: {path}")
+
+    @classmethod
+    def unsupported_seekdb_options(cls, options: list[str]) -> ValidationError:
+        return cls(f"Unsupported seekdb options: {options}")
+
+    @classmethod
+    def missing_sql_parameter(cls, name: str) -> ValidationError:
+        return cls(f"Missing SQL parameter: {name}")
+
 
 __all__ = [
     "ConfigurationError",
