@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from ..types import Ids, Vector, Vectors
+from ..types import Ids, VectorQuery, Vectors
 
 
 class VectorStore(ABC):
@@ -34,12 +34,18 @@ class VectorStore(ABC):
     def search(
         self,
         collection: str,
-        query: Vector,
+        query: VectorQuery,
         top_k: int,
+        *,
         where: Mapping[str, Any] | None = None,
+        return_fields: Sequence[str] | None = None,
+        include_distance: bool = True,
+        include_metadata: bool = True,
     ) -> list[Mapping[str, Any]]:
-        """Search the vector store and return results."""
+        """Search the vector store and return results.
+
+        When return_fields is provided, include_metadata is ignored.
+        """
 
 
 __all__ = ["VectorStore"]
-

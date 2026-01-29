@@ -1,5 +1,5 @@
 """Database core driver implementations."""
 
-from .sqlalchemy import SQLAlchemyDatabase
+from .sql import SQLDatabase
 
-__all__ = ["SQLAlchemyDatabase"]
+__all__ = ["SQLDatabase"]

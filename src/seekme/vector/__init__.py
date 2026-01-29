@@ -1,7 +1,6 @@
 """Vector store modules for the SDK."""
 
 from .core import VectorStore
-from .sqlalchemy import SQLAlchemyVectorStore
+from .sql import SQLVectorStore
 
-__all__ = ["VectorStore", "SQLAlchemyVectorStore"]
-
+__all__ = ["SQLVectorStore", "VectorStore"]

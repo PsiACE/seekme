@@ -4,10 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import create_engine
-
 from .db import Database
 from .embeddings import Embedder
+from .registry import DEFAULT_DB_DRIVER, DEFAULT_VECTOR_STORE, ensure_defaults, get_db_driver, get_vector_store
 from .vector import VectorStore
 
 
@@ -26,13 +25,18 @@ class Client:
         self._embedder = embedder
 
     @classmethod
-    def from_database_url(cls, url: str, **engine_kwargs: Any) -> "Client":
-        """Create a client from a SQLAlchemy database URL."""
+    def from_database_url(
+        cls,
+        url: str,
+        *,
+        db_driver: str = DEFAULT_DB_DRIVER,
+        **driver_kwargs: Any,
+    ) -> Client:
+        """Create a client from a database URL using a registered driver."""
 
-        engine = create_engine(url, **engine_kwargs)
-        from .db.drivers import SQLAlchemyDatabase
-
-        return cls(db=SQLAlchemyDatabase(engine))
+        ensure_defaults()
+        factory = get_db_driver(db_driver)
+        return cls(db=factory(url, **driver_kwargs))
 
     @property
     def db(self) -> Database | None:
@@ -44,6 +48,10 @@ class Client:
     def vector_store(self) -> VectorStore | None:
         """Return the vector store component."""
 
+        if self._vector_store is None and self._db is not None:
+            ensure_defaults()
+            factory = get_vector_store(DEFAULT_VECTOR_STORE)
+            self._vector_store = factory(self._db, embedder=self._embedder)
         return self._vector_store
 
     @property
@@ -52,7 +60,7 @@ class Client:
 
         return self._embedder
 
-    def connect(self) -> "Client":
+    def connect(self) -> Client:
         """Explicitly connect underlying components when supported."""
 
         if self._db is not None:
@@ -65,7 +73,7 @@ class Client:
         if self._db is not None:
             self._db.close()
 
-    def __enter__(self) -> "Client":
+    def __enter__(self) -> Client:
         return self.connect()
 
     def __exit__(self, exc_type: type[BaseException] | None, exc: BaseException | None, tb: Any) -> None:

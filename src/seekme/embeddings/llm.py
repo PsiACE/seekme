@@ -1,7 +1,8 @@
-"""Any-LLM embedding provider adapter."""
+"""LLM embedding provider adapter."""
 
 from __future__ import annotations
 
+import importlib
 from collections.abc import Sequence
 from typing import Any
 
@@ -9,8 +10,8 @@ from .base import Embedder
 from ..types import Document, Vector
 
 
-class AnyLLMEmbedder(Embedder):
-    """Embedding provider backed by any-llm."""
+class LLMEmbedder(Embedder):
+    """Embedding provider backed by a hosted LLM embedding API."""
 
     def __init__(
         self,
@@ -32,7 +33,7 @@ class AnyLLMEmbedder(Embedder):
     def embed(self, texts: Sequence[Document]) -> list[Vector]:
         if not texts:
             return []
-        api = _load_any_llm_api()
+        api = _load_llm_api()
         result = api.embedding(
             self._model,
             list(texts),
@@ -45,11 +46,13 @@ class AnyLLMEmbedder(Embedder):
         return _normalize_embeddings(result)
 
 
-def _load_any_llm_api():
+def _load_llm_api():
     try:
-        import any_llm
+        any_llm = importlib.import_module("any_llm")
     except ImportError as exc:  # pragma: no cover - optional dependency
-        raise ImportError("any-llm is required. Install with: pip install any-llm-sdk") from exc
+        raise ImportError(
+            "Embedding support requires extra dependencies. Install with: pip install 'seekme[embeddings]'"
+        ) from exc
     return any_llm.api
 
 
@@ -77,4 +80,4 @@ def _from_data_list(data: Any) -> list[Vector]:
     return embeddings
 
 
-__all__ = ["AnyLLMEmbedder"]
+__all__ = ["LLMEmbedder"]

@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Protocol, Sequence, runtime_checkable
+from collections.abc import Sequence
+from typing import Protocol, runtime_checkable
 
 from ..types import Document, Vector
 
@@ -16,4 +17,3 @@ class Embedder(Protocol):
 
 
 __all__ = ["Embedder"]
-

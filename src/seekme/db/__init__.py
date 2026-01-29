@@ -1,7 +1,6 @@
 """Database modules for the SDK."""
 
 from .core import Database
-from .drivers import SQLAlchemyDatabase
+from .drivers import SQLDatabase
 
-__all__ = ["Database", "SQLAlchemyDatabase"]
-
+__all__ = ["Database", "SQLDatabase"]

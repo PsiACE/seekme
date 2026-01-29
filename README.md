@@ -6,69 +6,77 @@
 [![Commit activity](https://img.shields.io/github/commit-activity/m/psiace/seekme)](https://img.shields.io/github/commit-activity/m/psiace/seekme)
 [![License](https://img.shields.io/github/license/psiace/seekme)](https://img.shields.io/github/license/psiace/seekme)
 
-End-to-end seekdb toolchain for AI workflows in-database.
+seekme is an end-to-end seekdb toolchain for AI workflows in-database.
 
-- **Github repository**: <https://github.com/psiace/seekme/>
-- **Documentation** <https://psiace.github.io/seekme/>
-
-## Getting started with your project
-
-### 1. Create a New Repository
-
-First, create a repository on GitHub with the same name as this project, and then run the following commands:
+## Install
 
 ```bash
-git init -b main
-git add .
-git commit -m "init commit"
-git remote add origin git@github.com:psiace/seekme.git
-git push -u origin main
+pip install seekme
 ```
 
-### 2. Set Up Your Development Environment
+Optional extras:
 
-Then, install the environment and the pre-commit hooks with
+```bash
+pip install "seekme[mysql]"
+pip install "seekme[embeddings]"
+```
+
+Notes:
+- `seekme[embeddings]` requires Python 3.11+ due to provider SDK requirements.
+
+## Quickstart
+
+```python
+from seekme import Client
+
+client = Client.from_database_url("mysql+pymysql://root:@127.0.0.1:2881/seekme_test")
+client.connect()
+
+row = client.db.fetch_one("SELECT 1 AS ok")
+assert row["ok"] == 1
+```
+
+### Vector Search
+
+```python
+store = client.vector_store
+store.create_collection("docs", dimension=3)
+store.upsert(
+    "docs",
+    ids=["v1", "v2"],
+    vectors=[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]],
+)
+
+results = store.search("docs", query=[1.0, 0.0, 0.0], top_k=3)
+```
+
+### Embeddings (optional)
+
+```python
+from seekme.embeddings import LLMEmbedder
+
+embedder = LLMEmbedder(model="text-embedding-3-small", provider="openai")
+client = Client(db=client.db, embedder=embedder)
+
+results = client.vector_store.search("docs", query="hello world", top_k=3)
+```
+
+## Design Principles
+
+- End-to-end seekdb toolchain for AI workflows in-database
+- SQL-first and explicit
+- Minimal surface area, no ORM replacement
+- Clear error boundaries and optional dependencies
+- Extensible via registry for custom drivers and stores
+
+## Documentation
+
+- User guide: https://psiace.github.io/seekme/
+
+## Development
 
 ```bash
 make install
+make check
+make test
 ```
-
-This will also generate your `uv.lock` file
-
-### 3. Run the pre-commit hooks
-
-Initially, the CI/CD pipeline might be failing due to formatting issues. To resolve those run:
-
-```bash
-uv run pre-commit run -a
-```
-
-### 4. Commit the changes
-
-Lastly, commit the changes made by the two steps above to your repository.
-
-```bash
-git add .
-git commit -m 'Fix formatting issues'
-git push origin main
-```
-
-You are now ready to start development on your project!
-The CI/CD pipeline will be triggered when you open a pull request, merge to main, or when you create a new release.
-
-To finalize the set-up for publishing to PyPI, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/publishing/#set-up-for-pypi).
-For activating the automatic documentation with MkDocs, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/mkdocs/#enabling-the-documentation-on-github).
-To enable the code coverage reports, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/codecov/).
-
-## Releasing a new version
-
-- Create an API Token on [PyPI](https://pypi.org/).
-- Add the API Token to your projects secrets with the name `PYPI_TOKEN` by visiting [this page](https://github.com/psiace/seekme/settings/secrets/actions/new).
-- Create a [new release](https://github.com/psiace/seekme/releases/new) on Github.
-- Create a new tag in the form `*.*.*`.
-
-For more details, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/cicd/#how-to-trigger-a-release).
-
----
-
-Repository initiated with [fpgmaas/cookiecutter-uv](https://github.com/fpgmaas/cookiecutter-uv).

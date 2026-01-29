@@ -17,11 +17,22 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+dependencies = [
+    "SQLAlchemy>=2.0.0,<3.0",
+]
 
 [project.urls]
 Homepage = "https://psiace.github.io/seekme/"
 Repository = "https://github.com/psiace/seekme"
 Documentation = "https://psiace.github.io/seekme/"
+
+[project.optional-dependencies]
+embeddings = [
+    "any-llm-sdk>=1.7.0; python_version >= '3.11'",
+]
+mysql = [
+    "PyMySQL>=1.1.0",
+]
 
 [dependency-groups]
 dev = [
@@ -30,6 +41,9 @@ dev = [
     "tox-uv>=1.29.0",
 
     "ty>=0.0.8",
+
+    "PyMySQL>=1.1.0",
+    "python-dotenv>=1.1.0",
 
     "ruff>=0.14.10",
     "mkdocs>=1.6.1",

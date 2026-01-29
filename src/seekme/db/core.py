@@ -44,4 +44,3 @@ class Database(ABC):
 
 
 __all__ = ["Database"]
-

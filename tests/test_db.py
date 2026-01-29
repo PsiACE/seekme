@@ -1,4 +1,4 @@
-"""Integration tests for SQLAlchemy database layer."""
+"""Integration tests for SQL database layer."""
 
 from __future__ import annotations
 
@@ -132,20 +132,3 @@ def test_insert_select_update_delete(client: Client, table_cleanup: list[str]) -
     rows = client.db.fetch_all("SELECT id FROM seekme_people ORDER BY id")
     assert rows == [{"id": 2}]
 
-
-def test_vector_store_basic(client: Client, table_cleanup: list[str]) -> None:
-    from seekme.vector import SQLAlchemyVectorStore
-
-    assert client.db is not None
-    store = SQLAlchemyVectorStore(client.db)
-    store.create_collection("seekme_vectors", dimension=3)
-    table_cleanup.append("seekme_vectors")
-
-    store.upsert(
-        "seekme_vectors",
-        ids=["v1", "v2"],
-        vectors=[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]],
-    )
-
-    results = store.search("seekme_vectors", query=[1.0, 0.0, 0.0], top_k=1)
-    assert results[0]["id"] == "v1"

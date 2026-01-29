@@ -18,3 +18,15 @@ class DatabaseConnectionError(SeekMeError):
 class QueryError(SeekMeError):
     """Raised when a query execution fails."""
 
+
+class ExtensionNotFoundError(SeekMeError):
+    """Raised when a requested extension is not registered."""
+
+
+__all__ = [
+    "ConfigurationError",
+    "DatabaseConnectionError",
+    "ExtensionNotFoundError",
+    "QueryError",
+    "SeekMeError",
+]

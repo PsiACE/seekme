@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from typing import Any
 
 Document = str
 Documents = Sequence[Document]
 
 Vector = Sequence[float]
 Vectors = Sequence[Vector]
+VectorQuery = Vector | Document
 
 Metadata = Mapping[str, Any]
 Metadatas = Sequence[Metadata]
@@ -19,11 +21,11 @@ Ids = Sequence[Id]
 __all__ = [
     "Document",
     "Documents",
-    "Vector",
-    "Vectors",
-    "Metadata",
-    "Metadatas",
     "Id",
     "Ids",
+    "Metadata",
+    "Metadatas",
+    "Vector",
+    "VectorQuery",
+    "Vectors",
 ]
-
