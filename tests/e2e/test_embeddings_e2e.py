@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from seekme import Client
-from seekme.embeddings import LLMEmbedder
+from seekme.embeddings import RemoteEmbedder
 
 
 @pytest.mark.e2e
@@ -14,7 +14,7 @@ def test_embeddings_end_to_end(
     table_cleanup: list[str],
     embedding_config,
 ) -> None:
-    embedder = LLMEmbedder(
+    embedder = RemoteEmbedder(
         model=embedding_config.model,
         provider=embedding_config.provider,
         api_key=embedding_config.api_key,

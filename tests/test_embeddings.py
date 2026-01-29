@@ -8,7 +8,7 @@ from typing import ClassVar
 
 import pytest
 
-from seekme.embeddings import LLMEmbedder
+from seekme.embeddings import RemoteEmbedder
 from seekme.exceptions import EmbeddingError
 
 
@@ -23,7 +23,7 @@ def test_llm_adapter_normalizes_data_response(monkeypatch) -> None:
     api = types.SimpleNamespace(embedding=lambda *args, **kwargs: Response())
     monkeypatch.setitem(sys.modules, "any_llm", types.SimpleNamespace(api=api))
 
-    provider = LLMEmbedder(model="test-model", provider="test")
+    provider = RemoteEmbedder(model="test-model", provider="test")
     embeddings = provider.embed(["a", "b"])
 
     assert embeddings == [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]]
@@ -33,7 +33,7 @@ def test_llm_adapter_accepts_list_response(monkeypatch) -> None:
     api = types.SimpleNamespace(embedding=lambda *args, **kwargs: [[1.0, 2.0]])
     monkeypatch.setitem(sys.modules, "any_llm", types.SimpleNamespace(api=api))
 
-    provider = LLMEmbedder(model="test-model")
+    provider = RemoteEmbedder(model="test-model")
     embeddings = provider.embed(["x"])
 
     assert embeddings == [[1.0, 2.0]]
@@ -49,7 +49,7 @@ def test_llm_adapter_wraps_provider_error(monkeypatch) -> None:
     api = types.SimpleNamespace(embedding=_raise)
     monkeypatch.setitem(sys.modules, "any_llm", types.SimpleNamespace(api=api))
 
-    provider = LLMEmbedder(model="test-model")
+    provider = RemoteEmbedder(model="test-model")
 
     with pytest.raises(EmbeddingError, match="Embedding request failed"):
         provider.embed(["x"])

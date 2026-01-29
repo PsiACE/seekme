@@ -11,8 +11,8 @@ from ..types import Document, Vector
 from .base import Embedder
 
 
-class LLMEmbedder(Embedder):
-    """Embedding provider backed by a hosted LLM embedding API."""
+class RemoteEmbedder(Embedder):
+    """Embedding provider backed by a hosted embedding API."""
 
     def __init__(
         self,
@@ -87,4 +87,6 @@ def _from_data_list(data: Any) -> list[Vector]:
     return embeddings
 
 
-__all__ = ["LLMEmbedder"]
+LLMEmbedder = RemoteEmbedder
+
+__all__ = ["LLMEmbedder", "RemoteEmbedder"]
