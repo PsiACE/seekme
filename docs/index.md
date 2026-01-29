@@ -14,7 +14,8 @@ seekme is an end-to-end seekdb toolchain for AI workflows in-database. It keeps 
 
 - SQL execution with a unified client
 - Vector collections backed by SQL tables
-- Optional embeddings via provider SDKs
+- Optional embeddings via remote providers or sentence-transformers
+- Embedded seekdb via pylibseekdb (Linux)
 
 ## Quickstart (30s)
 
@@ -29,6 +30,26 @@ store.create_collection("docs", dimension=3)
 store.upsert("docs", ids=["v1"], vectors=[[1.0, 0.0, 0.0]])
 
 results = store.search("docs", query=[1.0, 0.0, 0.0], top_k=1)
+```
+
+## Use cases
+
+### SQL + Vector + Local Embeddings
+
+```python
+from seekme.embeddings import LocalEmbedder
+
+embedder = LocalEmbedder(model="sentence-transformers/paraphrase-MiniLM-L3-v2")
+client = Client(db=client.db, embedder=embedder)
+
+results = client.vector_store.search("docs", query="hello world", top_k=3)
+```
+
+### Embedded seekdb
+
+```python
+client = Client.from_database_url("seekdb:////tmp/seekdb.db?database=seekme_test", db_driver="seekdb")
+client.connect()
 ```
 
 ## When to use seekme

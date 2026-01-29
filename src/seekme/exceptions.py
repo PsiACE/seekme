@@ -36,7 +36,8 @@ class ConfigurationError(SeekMeError):
     @classmethod
     def embedding_not_configured(cls) -> ConfigurationError:
         return cls(
-            "Embedding is not configured. Provide an embedder or install extras: pip install 'seekme[embeddings]'"
+            "Embedding is not configured. Provide an embedder or install extras: "
+            "pip install 'seekme[remote-embeddings]' or 'seekme[local-embeddings]'"
         )
 
     @classmethod

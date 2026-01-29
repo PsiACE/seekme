@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 
 from seekme import Client
+from seekme.embeddings import LocalEmbedder
 from seekme.exceptions import ConfigurationError, ValidationError
 
 
@@ -57,6 +58,29 @@ def test_vector_store_requires_embedder_for_text_query(client: Client, table_cle
 
     with pytest.raises(ConfigurationError):
         store.search("seekme_vectors_text", query="hello", top_k=1)
+
+
+def test_vector_store_text_query_with_local_embedder(
+    client: Client, table_cleanup: list[str], local_embedder: LocalEmbedder
+) -> None:
+    embedder_client = Client(db=client.db, embedder=local_embedder)
+    store = embedder_client.vector_store
+    assert store is not None
+
+    sample = local_embedder.embed(["hello", "world"])
+    dimension = len(sample[0])
+    store.create_collection("seekme_vectors_local", dimension=dimension)
+    table_cleanup.append("seekme_vectors_local")
+
+    store.upsert(
+        "seekme_vectors_local",
+        ids=["v1", "v2"],
+        vectors=sample,
+        metadatas=[{"lang": "en"}, {"lang": "en"}],
+    )
+
+    results = store.search("seekme_vectors_local", query="hello", top_k=1, return_fields=["id"])
+    assert results
 
 
 def test_vector_store_where_filter_metadata(client: Client, table_cleanup: list[str]) -> None:

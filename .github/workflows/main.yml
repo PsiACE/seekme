@@ -29,7 +29,17 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        include:
+          - python-version: "3.10"
+            local-embeddings: "0"
+          - python-version: "3.11"
+            local-embeddings: "1"
+          - python-version: "3.12"
+            local-embeddings: "0"
+          - python-version: "3.13"
+            local-embeddings: "0"
+          - python-version: "3.14"
+            local-embeddings: "0"
       fail-fast: false
     defaults:
       run:
@@ -44,16 +54,23 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install test dependencies
-        run: uv sync --frozen --extra mysql --extra embeddings --group dev
+        run: |
+          extras="--extra mysql --extra remote-embeddings"
+          if [ "${{ matrix.local-embeddings }}" = "1" ]; then
+            extras="$extras --extra local-embeddings"
+          fi
+          uv sync --frozen $extras --group dev
 
       - name: Prepare test environment
         run: |
           cat <<EOF > .env
-          SEEKDB_HOST=127.0.0.1
-          SEEKDB_PORT=2881
-          SEEKDB_USER=root
-          SEEKDB_PASSWORD=
-          SEEKDB_TEST_DATABASE=seekme_test
+          SEEKME_TEST_DB_MODE=remote
+          SEEKME_TEST_DB_HOST=127.0.0.1
+          SEEKME_TEST_DB_PORT=2881
+          SEEKME_TEST_DB_USER=root
+          SEEKME_TEST_DB_PASSWORD=
+          SEEKME_TEST_DB_NAME=seekme_test
+          SEEKME_TEST_LOCAL_EMBEDDING=${{ matrix.local-embeddings }}
           EOF
 
       - name: Free disk space
@@ -102,13 +119,16 @@ jobs:
       - name: Run e2e tests
         if: matrix.python-version == '3.11'
         env:
-          LLM_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+          SEEKME_TEST_REMOTE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
         run: |
-          if [ -z "$LLM_API_KEY" ]; then
+          if [ -z "$SEEKME_TEST_REMOTE_API_KEY" ]; then
             echo "DASHSCOPE_API_KEY is not set; skipping e2e embedding tests."
             exit 0
           fi
-          echo "LLM_API_KEY=$LLM_API_KEY" >> .env
+          cat <<EOF >> .env
+          SEEKME_TEST_REMOTE_EMBEDDING=1
+          SEEKME_TEST_REMOTE_API_KEY=$SEEKME_TEST_REMOTE_API_KEY
+          EOF
           uv run python -m pytest -m e2e tests/e2e
 
       - name: Stop seekdb
@@ -142,8 +162,9 @@ jobs:
 
       - name: Run embedded tests
         env:
-          SEEKME_DRIVER: seekdb
-          SEEKDB_PATH: /tmp/seekdb.db
+          SEEKME_TEST_DB_MODE: embedded
+          SEEKME_TEST_SEEKDB_PATH: /tmp/seekdb.db
+          SEEKME_TEST_LOCAL_EMBEDDING: "0"
         run: make test
 
 

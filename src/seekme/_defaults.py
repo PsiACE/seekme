@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from .db.drivers.seekdb import SeekdbDatabase
 from .db.drivers.sql import SQLDatabase
-from .embeddings.llm import RemoteEmbedder
+from .embeddings.local import LocalEmbedder
+from .embeddings.remote import RemoteEmbedder
 from .registry import (
     DEFAULT_DB_DRIVER,
     DEFAULT_EMBEDDER,
@@ -29,3 +30,4 @@ def register_defaults() -> None:
     register_db_driver("seekdb", _create_seekdb_database)
     register_vector_store(DEFAULT_VECTOR_STORE, SQLVectorStore)
     register_embedder(DEFAULT_EMBEDDER, RemoteEmbedder)
+    register_embedder("local", LocalEmbedder)
