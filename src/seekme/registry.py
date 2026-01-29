@@ -15,7 +15,7 @@ EmbedderFactory = Callable[..., Embedder]
 
 DEFAULT_DB_DRIVER = "sql"
 DEFAULT_VECTOR_STORE = "sql"
-DEFAULT_EMBEDDER = "llm"
+DEFAULT_EMBEDDER = "remote"
 
 _db_factories: dict[str, DatabaseFactory] = {}
 _vector_factories: dict[str, VectorStoreFactory] = {}

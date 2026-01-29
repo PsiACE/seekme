@@ -1,4 +1,4 @@
-"""LLM embedding provider adapter."""
+"""Remote embedding provider adapter."""
 
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ class RemoteEmbedder(Embedder):
     def embed(self, texts: Sequence[Document]) -> list[Vector]:
         if not texts:
             return []
-        api = _load_llm_api()
+        api = _load_remote_api()
         try:
             result = api.embedding(
                 self._model,
@@ -55,11 +55,11 @@ class RemoteEmbedder(Embedder):
             raise EmbeddingError.response_failed() from exc
 
 
-def _load_llm_api():
+def _load_remote_api():
     try:
         any_llm = importlib.import_module("any_llm")
     except ImportError as exc:  # pragma: no cover - optional dependency
-        raise ConfigurationError.missing_optional_dependency("embeddings") from exc
+        raise ConfigurationError.missing_optional_dependency("remote-embeddings") from exc
     return any_llm.api
 
 
