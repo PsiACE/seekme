@@ -1,6 +1,21 @@
 # User Guide
 
-seekme is an end-to-end seekdb toolchain for AI workflows in-database. It provides a minimal, Pythonic surface with clear defaults, optional embeddings, and explicit extension points without hiding database behavior.
+seekme is an end-to-end seekdb toolchain for AI workflows in-database. It favors a minimal, explicit surface so you can stay close to SQL while adding vector search and optional embeddings.
+
+## Design Principles
+
+- Minimal surface area with one obvious path to connect and query
+- Explicit SQL behavior and predictable defaults
+- Optional embeddings that never block the core path
+- Consistent SDK-level errors instead of leaking driver details
+- Clear extension points for custom drivers and vector stores
+
+## Scope and Non-goals
+
+- No embedded engine
+- No heavy configuration layer or object graphs
+- No schema manager or migration framework (use SQL directly)
+- Complex filters should be expressed in SQL
 
 ## Install
 
@@ -42,7 +57,7 @@ store.upsert(
     "docs",
     ids=["v1", "v2"],
     vectors=[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]],
-    metadatas=[{"lang": "en"}, {"lang": "zh"}],
+    metadatas=[{"lang-code": "en"}, {"lang-code": "zh"}],
 )
 
 results = store.search(
@@ -54,7 +69,7 @@ results = store.search(
 )
 ```
 
-### SQL + Vector + Embeddings
+### SQL + Vector + Embeddings (optional)
 
 ```python
 from seekme.embeddings import LLMEmbedder
@@ -72,6 +87,14 @@ results = client.vector_store.search("docs", query="hello world", top_k=3)
 - `include_distance`: include `_distance` in results
 - `include_metadata`: include `metadata` in results
 - `return_fields`: explicit columns to return (overrides `include_metadata`)
+- `where`: metadata equality filters
+
+Notes:
+- `return_fields` must contain real table columns (for example `id`, custom columns).
+- `include_distance` still controls `_distance` even when `return_fields` is set.
+- `where` performs equality filtering on metadata with any string key.
+- `where` values set to `None` match missing or null.
+- Use SQL directly for complex filters (range/like/logical combinations).
 
 When `query` is a string, the store uses the configured embedder. If no embedder is configured, a clear `ConfigurationError` is raised.
 
@@ -81,6 +104,7 @@ seekme maps SQLAlchemy errors to SDK-level exceptions:
 
 - `DatabaseError` for connect, SQL execution, fetch, or transaction failures
 - `ConfigurationError` for missing extras, missing embedder, or unregistered extensions
+- `EmbeddingError` for embedding request/response failures
 - `ValidationError` for invalid identifiers or unexpected embedding responses
 
 This keeps error handling consistent without leaking driver details.
@@ -97,14 +121,3 @@ def create_custom_db(url: str, **kwargs):
 
 register_db_driver("custom", create_custom_db)
 ```
-
-## Experience Principles
-
-seekme focuses on a consistent, clear user experience with the smallest possible cognitive load.
-
-- One obvious way to connect and execute SQL
-- AI-in-database capabilities share one unified experience, not separate products
-- Optional capabilities never block the core path
-- Explicit errors and predictable defaults
-
-Advanced features can be added later without complicating the core path.

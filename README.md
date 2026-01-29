@@ -6,7 +6,7 @@
 [![Commit activity](https://img.shields.io/github/commit-activity/m/psiace/seekme)](https://img.shields.io/github/commit-activity/m/psiace/seekme)
 [![License](https://img.shields.io/github/license/psiace/seekme)](https://img.shields.io/github/license/psiace/seekme)
 
-seekme is an end-to-end seekdb toolchain for AI workflows in-database.
+seekme is an end-to-end seekdb toolchain for AI workflows in-database. It keeps a minimal, explicit surface so you can stay close to SQL while adding vector search and optional embeddings.
 
 ## Disclosure
 
@@ -36,13 +36,6 @@ from seekme import Client
 client = Client.from_database_url("mysql+pymysql://root:@127.0.0.1:2881/seekme_test")
 client.connect()
 
-row = client.db.fetch_one("SELECT 1 AS ok")
-assert row["ok"] == 1
-```
-
-### Vector Search
-
-```python
 store = client.vector_store
 store.create_collection("docs", dimension=3)
 store.upsert(
@@ -52,17 +45,6 @@ store.upsert(
 )
 
 results = store.search("docs", query=[1.0, 0.0, 0.0], top_k=3)
-```
-
-### Embeddings (optional)
-
-```python
-from seekme.embeddings import LLMEmbedder
-
-embedder = LLMEmbedder(model="text-embedding-3-small", provider="openai")
-client = Client(db=client.db, embedder=embedder)
-
-results = client.vector_store.search("docs", query="hello world", top_k=3)
 ```
 
 ## Documentation
