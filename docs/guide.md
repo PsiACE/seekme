@@ -79,8 +79,9 @@ When `query` is a string, the store uses the configured embedder. If no embedder
 
 seekme maps SQLAlchemy errors to SDK-level exceptions:
 
-- `DatabaseConnectionError` for connect failures
-- `QueryError` for SQL execution or transaction failures
+- `DatabaseError` for connect, SQL execution, fetch, or transaction failures
+- `ConfigurationError` for missing extras, missing embedder, or unregistered extensions
+- `ValidationError` for invalid identifiers or unexpected embedding responses
 
 This keeps error handling consistent without leaking driver details.
 
