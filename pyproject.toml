@@ -27,8 +27,11 @@ Repository = "https://github.com/psiace/seekme"
 Documentation = "https://psiace.github.io/seekme/"
 
 [project.optional-dependencies]
-embeddings = [
+remote-embeddings = [
     "any-llm-sdk>=1.7.0; python_version >= '3.11'",
+]
+local-embeddings = [
+    "sentence-transformers>=3.0.0,<4.0",
 ]
 mysql = [
     "PyMySQL>=1.1.0",
@@ -60,6 +63,13 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/seekme"]
+
+[tool.uv.pip]
+torch-backend = "cpu"
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
 
 [tool.ty.environment]
 python = "./.venv"
