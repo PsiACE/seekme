@@ -428,6 +428,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#sql-vector-local-embeddings-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SQL + Vector + Local Embeddings (optional)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#embedded-seekdb-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Embedded seekdb (optional)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -460,6 +482,17 @@
     <span class="md-ellipsis">
       
         Extensibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing
       
     </span>
   </a>
@@ -605,6 +638,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#sql-vector-local-embeddings-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SQL + Vector + Local Embeddings (optional)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#embedded-seekdb-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Embedded seekdb (optional)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -637,6 +692,17 @@
     <span class="md-ellipsis">
       
         Extensibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing
       
     </span>
   </a>
@@ -685,10 +751,14 @@
 </code></pre>
 <p>Optional extras:</p>
 <pre><code class="language-bash">pip install &quot;seekme[mysql]&quot;
-pip install &quot;seekme[embeddings]&quot;
+pip install &quot;seekme[remote-embeddings]&quot;
+pip install &quot;seekme[local-embeddings]&quot;
+pip install &quot;seekme[seekdb]&quot;
 </code></pre>
 <p>Notes:
-- <code>seekme[embeddings]</code> requires Python 3.11+ due to provider SDK requirements.</p>
+- <code>seekme[remote-embeddings]</code> requires Python 3.11+ due to provider SDK requirements.
+- <code>seekme[local-embeddings]</code> installs sentence-transformers.
+- <code>seekme[seekdb]</code> requires Linux and installs pylibseekdb for embedded mode.</p>
 <h2 id="quickstart">Quickstart<a class="headerlink" href="#quickstart" title="Permanent link">&para;</a></h2>
 <h3 id="sql-only">SQL-only<a class="headerlink" href="#sql-only" title="Permanent link">&para;</a></h3>
 <pre><code class="language-python">from seekme import Client
@@ -719,12 +789,25 @@ results = store.search(
 )
 </code></pre>
 <h3 id="sql-vector-embeddings-optional">SQL + Vector + Embeddings (optional)<a class="headerlink" href="#sql-vector-embeddings-optional" title="Permanent link">&para;</a></h3>
-<pre><code class="language-python">from seekme.embeddings import LLMEmbedder
+<pre><code class="language-python">from seekme.embeddings import RemoteEmbedder
 
-embedder = LLMEmbedder(model=&quot;text-embedding-3-small&quot;, provider=&quot;openai&quot;)
+embedder = RemoteEmbedder(model=&quot;text-embedding-3-small&quot;, provider=&quot;openai&quot;)
 client = Client(db=client.db, embedder=embedder)
 
 results = client.vector_store.search(&quot;docs&quot;, query=&quot;hello world&quot;, top_k=3)
+</code></pre>
+<h3 id="sql-vector-local-embeddings-optional">SQL + Vector + Local Embeddings (optional)<a class="headerlink" href="#sql-vector-local-embeddings-optional" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">from seekme.embeddings import LocalEmbedder
+
+embedder = LocalEmbedder(model=&quot;sentence-transformers/paraphrase-MiniLM-L3-v2&quot;)
+client = Client(db=client.db, embedder=embedder)
+
+results = client.vector_store.search(&quot;docs&quot;, query=&quot;hello world&quot;, top_k=3)
+</code></pre>
+<p><code>LocalEmbedder</code> uses <code>sentence-transformers</code> and accepts either a model name or a local path.</p>
+<h3 id="embedded-seekdb-optional">Embedded seekdb (optional)<a class="headerlink" href="#embedded-seekdb-optional" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">client = Client.from_database_url(&quot;seekdb:////tmp/seekdb.db?database=seekme_test&quot;, db_driver=&quot;seekdb&quot;)
+client.connect()
 </code></pre>
 <h2 id="vector-search-options">Vector Search Options<a class="headerlink" href="#vector-search-options" title="Permanent link">&para;</a></h2>
 <p><code>search()</code> supports explicit result controls:</p>
@@ -759,6 +842,31 @@ def create_custom_db(url: str, **kwargs):
 
 register_db_driver(&quot;custom&quot;, create_custom_db)
 </code></pre>
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
+<p>seekme tests are strict about environment configuration. Use <code>.env.test.example</code> as a template and
+set only the variables that match your target runtime.</p>
+<p>Remote mode (MySQL):</p>
+<ul>
+<li><code>SEEKME_TEST_DB_MODE=remote</code></li>
+<li><code>SEEKME_TEST_DB_URL</code> or
+  <code>SEEKME_TEST_DB_HOST/SEEKME_TEST_DB_PORT/SEEKME_TEST_DB_USER/SEEKME_TEST_DB_PASSWORD/SEEKME_TEST_DB_NAME</code></li>
+</ul>
+<p>Embedded mode:</p>
+<ul>
+<li><code>SEEKME_TEST_DB_MODE=embedded</code></li>
+<li><code>SEEKME_TEST_SEEKDB_PATH</code> (optional)</li>
+</ul>
+<p>Local embeddings:</p>
+<ul>
+<li><code>SEEKME_TEST_LOCAL_EMBEDDING=1</code></li>
+<li><code>SEEKME_TEST_LOCAL_MODEL</code></li>
+</ul>
+<p>Remote embeddings (e2e):</p>
+<ul>
+<li><code>SEEKME_TEST_REMOTE_EMBEDDING=1</code></li>
+<li><code>SEEKME_TEST_REMOTE_API_KEY</code></li>
+<li>optional <code>SEEKME_TEST_REMOTE_MODEL/SEEKME_TEST_REMOTE_PROVIDER/SEEKME_TEST_REMOTE_API_BASE</code></li>
+</ul>
 
 
 

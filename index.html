@@ -355,6 +355,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#use-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use cases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sql-vector-local-embeddings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SQL + Vector + Local Embeddings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#embedded-seekdb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Embedded seekdb
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#when-to-use-seekme" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -498,6 +537,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#use-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use cases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sql-vector-local-embeddings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SQL + Vector + Local Embeddings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#embedded-seekdb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Embedded seekdb
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#when-to-use-seekme" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -553,7 +631,8 @@
 <ul>
 <li>SQL execution with a unified client</li>
 <li>Vector collections backed by SQL tables</li>
-<li>Optional embeddings via provider SDKs</li>
+<li>Optional embeddings via remote providers or sentence-transformers</li>
+<li>Embedded seekdb via pylibseekdb (Linux)</li>
 </ul>
 <h2 id="quickstart-30s">Quickstart (30s)<a class="headerlink" href="#quickstart-30s" title="Permanent link">&para;</a></h2>
 <pre><code class="language-python">from seekme import Client
@@ -566,6 +645,19 @@ store.create_collection(&quot;docs&quot;, dimension=3)
 store.upsert(&quot;docs&quot;, ids=[&quot;v1&quot;], vectors=[[1.0, 0.0, 0.0]])
 
 results = store.search(&quot;docs&quot;, query=[1.0, 0.0, 0.0], top_k=1)
+</code></pre>
+<h2 id="use-cases">Use cases<a class="headerlink" href="#use-cases" title="Permanent link">&para;</a></h2>
+<h3 id="sql-vector-local-embeddings">SQL + Vector + Local Embeddings<a class="headerlink" href="#sql-vector-local-embeddings" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">from seekme.embeddings import LocalEmbedder
+
+embedder = LocalEmbedder(model=&quot;sentence-transformers/paraphrase-MiniLM-L3-v2&quot;)
+client = Client(db=client.db, embedder=embedder)
+
+results = client.vector_store.search(&quot;docs&quot;, query=&quot;hello world&quot;, top_k=3)
+</code></pre>
+<h3 id="embedded-seekdb">Embedded seekdb<a class="headerlink" href="#embedded-seekdb" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">client = Client.from_database_url(&quot;seekdb:////tmp/seekdb.db?database=seekme_test&quot;, db_driver=&quot;seekdb&quot;)
+client.connect()
 </code></pre>
 <h2 id="when-to-use-seekme">When to use seekme<a class="headerlink" href="#when-to-use-seekme" title="Permanent link">&para;</a></h2>
 <p>seekme is designed for applications that want a clean SDK for SQL + vector search without a heavy configuration layer.</p>
