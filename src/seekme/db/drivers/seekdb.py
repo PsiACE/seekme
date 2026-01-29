@@ -11,8 +11,8 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 from ...exceptions import ConfigurationError, DatabaseError, ValidationError
 from ..core import Database
+from ._seekdb_sql import infer_select_columns, normalize_row, normalize_rows, render_sql
 
-_PARAM_RE = re.compile(r":([A-Za-z_][A-Za-z0-9_]*)")
 _IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 _OPENED_PATH: str | None = None
 
@@ -63,7 +63,7 @@ class SeekdbDatabase(Database):
 
     def execute(self, sql: str, params: Mapping[str, Any] | None = None) -> int:
         conn = self._connection()
-        rendered = _render_sql(sql, params)
+        rendered = render_sql(sql, params)
         try:
             cursor = conn.cursor()
             cursor.execute(rendered)
@@ -75,15 +75,18 @@ class SeekdbDatabase(Database):
 
     def fetch_all(self, sql: str, params: Mapping[str, Any] | None = None) -> list[Mapping[str, Any]]:
         conn = self._connection()
-        rendered = _render_sql(sql, params)
+        rendered = render_sql(sql, params)
         try:
             cursor = conn.cursor()
             cursor.execute(rendered)
             rows = cursor.fetchall()
             description = getattr(cursor, "description", None)
-            if not description and rows:
-                description = _infer_description(rendered)
-            return _normalize_rows(rows, description)
+            columns = None
+            if description:
+                columns = [col[0] for col in description]
+            elif rows:
+                columns = infer_select_columns(rendered)
+            return normalize_rows(rows, columns)
         except Exception as exc:
             raise DatabaseError.fetch_failed() from exc
         finally:
@@ -91,15 +94,18 @@ class SeekdbDatabase(Database):
 
     def fetch_one(self, sql: str, params: Mapping[str, Any] | None = None) -> Mapping[str, Any] | None:
         conn = self._connection()
-        rendered = _render_sql(sql, params)
+        rendered = render_sql(sql, params)
         try:
             cursor = conn.cursor()
             cursor.execute(rendered)
             row = cursor.fetchone()
             description = getattr(cursor, "description", None)
-            if not description and row is not None:
-                description = _infer_description(rendered)
-            return _normalize_row(row, description)
+            columns = None
+            if description:
+                columns = [col[0] for col in description]
+            elif row is not None:
+                columns = infer_select_columns(rendered)
+            return normalize_row(row, columns)
         except Exception as exc:
             raise DatabaseError.fetch_failed() from exc
         finally:
@@ -171,36 +177,6 @@ def _parse_seekdb_url(url: str) -> tuple[str, str]:
     return path, database
 
 
-def _render_sql(sql: str, params: Mapping[str, Any] | None) -> str:
-    if not params:
-        return sql
-
-    def replace(match: re.Match[str]) -> str:
-        name = match.group(1)
-        if name not in params:
-            raise ValidationError.missing_sql_parameter(name)
-        return _sql_literal(params[name])
-
-    return _PARAM_RE.sub(replace, sql)
-
-
-def _sql_literal(value: Any) -> str:
-    if value is None:
-        return "NULL"
-    if isinstance(value, bool):
-        return "1" if value else "0"
-    if isinstance(value, (int, float)):
-        return str(value)
-    if isinstance(value, (bytes, bytearray, memoryview)):
-        text = bytes(value).decode("utf-8", errors="replace")
-        return f"'{_escape_sql(text)}'"
-    return f"'{_escape_sql(str(value))}'"
-
-
-def _escape_sql(value: str) -> str:
-    return value.replace("'", "''")
-
-
 def _create_database(seekdb: Any, name: str) -> None:
     _validate_identifier(name)
     try:
@@ -224,55 +200,6 @@ def _is_unknown_database(exc: Exception) -> bool:
 def _validate_identifier(name: str) -> None:
     if not _IDENTIFIER_RE.match(name):
         raise ValidationError.invalid_identifier(name)
-
-
-def _normalize_rows(rows: Any, description: Any) -> list[Mapping[str, Any]]:
-    if rows is None:
-        return []
-    if not description:
-        return [row if isinstance(row, dict) else {"value": row} for row in rows]
-    columns = [col[0] for col in description]
-    return [dict(zip(columns, row, strict=False)) for row in rows]
-
-
-def _normalize_row(row: Any, description: Any) -> Mapping[str, Any] | None:
-    if row is None:
-        return None
-    if not description:
-        return row if isinstance(row, dict) else {"value": row}
-    columns = [col[0] for col in description]
-    return dict(zip(columns, row, strict=False))
-
-
-def _infer_description(sql: str) -> list[tuple[str]]:
-    match = re.search(r"SELECT\s+(.+?)\s+FROM", sql, flags=re.IGNORECASE | re.DOTALL)
-    if not match:
-        return [("value",)]
-    select_clause = match.group(1).strip()
-    parts: list[str] = []
-    depth = 0
-    current = ""
-    for char in select_clause:
-        if char == "(":
-            depth += 1
-        elif char == ")":
-            depth -= 1
-        elif char == "," and depth == 0:
-            parts.append(current.strip())
-            current = ""
-            continue
-        current += char
-    if current:
-        parts.append(current.strip())
-    column_names: list[str] = []
-    for part in parts:
-        as_match = re.search(r"\s+AS\s+(\w+)", part, re.IGNORECASE)
-        if as_match:
-            column_names.append(as_match.group(1))
-            continue
-        raw = part.replace("`", "").strip()
-        column_names.append(raw.split()[-1])
-    return [(name,) for name in column_names]
 
 
 __all__ = ["SeekdbDatabase"]
