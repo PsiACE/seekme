@@ -351,6 +351,28 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Principles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope-and-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope and Non-goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#install" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -396,10 +418,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#sql-vector-embeddings" class="md-nav__link">
+  <a href="#sql-vector-embeddings-optional" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SQL + Vector + Embeddings
+        SQL + Vector + Embeddings (optional)
       
     </span>
   </a>
@@ -438,17 +460,6 @@
     <span class="md-ellipsis">
       
         Extensibility
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#experience-principles" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Experience Principles
       
     </span>
   </a>
@@ -517,6 +528,28 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Principles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scope-and-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope and Non-goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#install" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -562,10 +595,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#sql-vector-embeddings" class="md-nav__link">
+  <a href="#sql-vector-embeddings-optional" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SQL + Vector + Embeddings
+        SQL + Vector + Embeddings (optional)
       
     </span>
   </a>
@@ -610,17 +643,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#experience-principles" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Experience Principles
-      
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -642,7 +664,22 @@
 
 
 <h1 id="user-guide">User Guide<a class="headerlink" href="#user-guide" title="Permanent link">&para;</a></h1>
-<p>seekme is an end-to-end seekdb toolchain for AI workflows in-database. It provides a minimal, Pythonic surface with clear defaults, optional embeddings, and explicit extension points without hiding database behavior.</p>
+<p>seekme is an end-to-end seekdb toolchain for AI workflows in-database. It favors a minimal, explicit surface so you can stay close to SQL while adding vector search and optional embeddings.</p>
+<h2 id="design-principles">Design Principles<a class="headerlink" href="#design-principles" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Minimal surface area with one obvious path to connect and query</li>
+<li>Explicit SQL behavior and predictable defaults</li>
+<li>Optional embeddings that never block the core path</li>
+<li>Consistent SDK-level errors instead of leaking driver details</li>
+<li>Clear extension points for custom drivers and vector stores</li>
+</ul>
+<h2 id="scope-and-non-goals">Scope and Non-goals<a class="headerlink" href="#scope-and-non-goals" title="Permanent link">&para;</a></h2>
+<ul>
+<li>No embedded engine</li>
+<li>No heavy configuration layer or object graphs</li>
+<li>No schema manager or migration framework (use SQL directly)</li>
+<li>Complex filters should be expressed in SQL</li>
+</ul>
 <h2 id="install">Install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h2>
 <pre><code class="language-bash">pip install seekme
 </code></pre>
@@ -670,7 +707,7 @@ store.upsert(
     &quot;docs&quot;,
     ids=[&quot;v1&quot;, &quot;v2&quot;],
     vectors=[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]],
-    metadatas=[{&quot;lang&quot;: &quot;en&quot;}, {&quot;lang&quot;: &quot;zh&quot;}],
+    metadatas=[{&quot;lang-code&quot;: &quot;en&quot;}, {&quot;lang-code&quot;: &quot;zh&quot;}],
 )
 
 results = store.search(
@@ -681,7 +718,7 @@ results = store.search(
     include_metadata=True,
 )
 </code></pre>
-<h3 id="sql-vector-embeddings">SQL + Vector + Embeddings<a class="headerlink" href="#sql-vector-embeddings" title="Permanent link">&para;</a></h3>
+<h3 id="sql-vector-embeddings-optional">SQL + Vector + Embeddings (optional)<a class="headerlink" href="#sql-vector-embeddings-optional" title="Permanent link">&para;</a></h3>
 <pre><code class="language-python">from seekme.embeddings import LLMEmbedder
 
 embedder = LLMEmbedder(model=&quot;text-embedding-3-small&quot;, provider=&quot;openai&quot;)
@@ -695,13 +732,21 @@ results = client.vector_store.search(&quot;docs&quot;, query=&quot;hello world&q
 <li><code>include_distance</code>: include <code>_distance</code> in results</li>
 <li><code>include_metadata</code>: include <code>metadata</code> in results</li>
 <li><code>return_fields</code>: explicit columns to return (overrides <code>include_metadata</code>)</li>
+<li><code>where</code>: metadata equality filters</li>
 </ul>
+<p>Notes:
+- <code>return_fields</code> must contain real table columns (for example <code>id</code>, custom columns).
+- <code>include_distance</code> still controls <code>_distance</code> even when <code>return_fields</code> is set.
+- <code>where</code> performs equality filtering on metadata with any string key.
+- <code>where</code> values set to <code>None</code> match missing or null.
+- Use SQL directly for complex filters (range/like/logical combinations).</p>
 <p>When <code>query</code> is a string, the store uses the configured embedder. If no embedder is configured, a clear <code>ConfigurationError</code> is raised.</p>
 <h2 id="errors">Errors<a class="headerlink" href="#errors" title="Permanent link">&para;</a></h2>
 <p>seekme maps SQLAlchemy errors to SDK-level exceptions:</p>
 <ul>
 <li><code>DatabaseError</code> for connect, SQL execution, fetch, or transaction failures</li>
 <li><code>ConfigurationError</code> for missing extras, missing embedder, or unregistered extensions</li>
+<li><code>EmbeddingError</code> for embedding request/response failures</li>
 <li><code>ValidationError</code> for invalid identifiers or unexpected embedding responses</li>
 </ul>
 <p>This keeps error handling consistent without leaking driver details.</p>
@@ -714,15 +759,6 @@ def create_custom_db(url: str, **kwargs):
 
 register_db_driver(&quot;custom&quot;, create_custom_db)
 </code></pre>
-<h2 id="experience-principles">Experience Principles<a class="headerlink" href="#experience-principles" title="Permanent link">&para;</a></h2>
-<p>seekme focuses on a consistent, clear user experience with the smallest possible cognitive load.</p>
-<ul>
-<li>One obvious way to connect and execute SQL</li>
-<li>AI-in-database capabilities share one unified experience, not separate products</li>
-<li>Optional capabilities never block the core path</li>
-<li>Explicit errors and predictable defaults</li>
-</ul>
-<p>Advanced features can be added later without complicating the core path.</p>
 
 
 

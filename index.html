@@ -322,6 +322,50 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#why-seekme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why seekme
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feature-snapshot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature snapshot
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quickstart-30s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quickstart (30s)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-seekme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use seekme
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#quick-links" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -421,6 +465,50 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#why-seekme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why seekme
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feature-snapshot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature snapshot
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quickstart-30s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quickstart (30s)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-seekme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use seekme
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#quick-links" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -452,7 +540,36 @@
 
 
 <h1 id="seekme">seekme<a class="headerlink" href="#seekme" title="Permanent link">&para;</a></h1>
-<p>seekme is an end-to-end seekdb toolchain for AI workflows in-database.</p>
+<p>seekme is an end-to-end seekdb toolchain for AI workflows in-database. It keeps a minimal, explicit surface so you can stay close to SQL while adding vector search and optional embeddings.</p>
+<h2 id="why-seekme">Why seekme<a class="headerlink" href="#why-seekme" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Minimal surface area with one obvious path to connect and query</li>
+<li>Explicit SQL behavior and predictable defaults</li>
+<li>Optional embeddings that never block the core path</li>
+<li>Consistent SDK-level errors instead of leaking driver details</li>
+<li>Clear extension points for custom drivers and vector stores</li>
+</ul>
+<h2 id="feature-snapshot">Feature snapshot<a class="headerlink" href="#feature-snapshot" title="Permanent link">&para;</a></h2>
+<ul>
+<li>SQL execution with a unified client</li>
+<li>Vector collections backed by SQL tables</li>
+<li>Optional embeddings via provider SDKs</li>
+</ul>
+<h2 id="quickstart-30s">Quickstart (30s)<a class="headerlink" href="#quickstart-30s" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">from seekme import Client
+
+client = Client.from_database_url(&quot;mysql+pymysql://root:@127.0.0.1:2881/seekme_test&quot;)
+client.connect()
+
+store = client.vector_store
+store.create_collection(&quot;docs&quot;, dimension=3)
+store.upsert(&quot;docs&quot;, ids=[&quot;v1&quot;], vectors=[[1.0, 0.0, 0.0]])
+
+results = store.search(&quot;docs&quot;, query=[1.0, 0.0, 0.0], top_k=1)
+</code></pre>
+<h2 id="when-to-use-seekme">When to use seekme<a class="headerlink" href="#when-to-use-seekme" title="Permanent link">&para;</a></h2>
+<p>seekme is designed for applications that want a clean SDK for SQL + vector search without a heavy configuration layer.</p>
+<p>If you need complex filtering logic, advanced query planning, or schema management, use SQL directly and keep seekme focused on the core path.</p>
 <h2 id="quick-links">Quick Links<a class="headerlink" href="#quick-links" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="guide/">User Guide</a></li>
