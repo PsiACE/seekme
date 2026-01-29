@@ -978,6 +978,51 @@ wheels = [
 ]
 
 [[package]]
+name = "pylibseekdb"
+version = "1.0.0.post1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pylibseekdb-runtime" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/27/56/998e9b4e1434121c5c9401737e1c6ce616bfcda1c251daaf17859721d16b/pylibseekdb-1.0.0.post1-cp310-cp310-manylinux_2_28_aarch64.whl", hash = "sha256:7597e9fd16d8041de0a807778755748caa68ab7325c4ce1482fb273e7ce06817", size = 59928733, upload-time = "2025-11-17T11:30:53.99Z" },
+    { url = "https://files.pythonhosted.org/packages/c0/f4/ac814786d132b6097179b24366416673969360f77fdfddfeece778142d25/pylibseekdb-1.0.0.post1-cp310-cp310-manylinux_2_28_x86_64.whl", hash = "sha256:9b464cef55054e14bc434692b29260655f2d5cb045ab9846e45237114fc39704", size = 80354133, upload-time = "2025-11-17T11:01:20.804Z" },
+    { url = "https://files.pythonhosted.org/packages/36/bf/4e6f71db94babfce262c3ff2822ba37352797e4755abee52b702944deb74/pylibseekdb-1.0.0.post1-cp311-cp311-manylinux_2_28_aarch64.whl", hash = "sha256:d6203dd3fa72e5f945d159a0676a153c39d2723bcd8ec65c02191bd3ea362f31", size = 59932346, upload-time = "2025-11-17T11:31:01.092Z" },
+    { url = "https://files.pythonhosted.org/packages/0f/57/d5a8c4783d4748738912519f3dad3d31dc68f60e5e968a7fb200e69b9240/pylibseekdb-1.0.0.post1-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:3b499b7a3503dce422dbb9ed6133c5d27b27546df9e75bf9d4e408e520ed72b2", size = 80345108, upload-time = "2025-11-17T11:01:27.918Z" },
+    { url = "https://files.pythonhosted.org/packages/82/db/c59482230534d957d135221edbb04e04e5b1648f45c7ae668cbf4eb99c08/pylibseekdb-1.0.0.post1-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:07cbeecde1aaf5923e434bbcae2b27d6d7415354422eb54c459b84d25a47cbcb", size = 59931339, upload-time = "2025-11-17T11:31:08.485Z" },
+    { url = "https://files.pythonhosted.org/packages/ef/f8/9f3a323e848691329f6c2693316ad649c98ea8fd0ac10e95b95c725ff671/pylibseekdb-1.0.0.post1-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:edbc44df517f97dfcc248435f04ccf3b8a659c3d56a370a144e8783e9d73a98e", size = 80348265, upload-time = "2025-11-17T11:01:33.552Z" },
+    { url = "https://files.pythonhosted.org/packages/04/ee/3b8d985cb03064686f233bbc44003617050af8c3e519a30deaa1ee289d65/pylibseekdb-1.0.0.post1-cp313-cp313-manylinux_2_28_aarch64.whl", hash = "sha256:169416e717a05c38ac984a5ea9c1778e17d01912bb7d3c52771b90a631e89429", size = 59929316, upload-time = "2025-11-17T11:31:17.758Z" },
+    { url = "https://files.pythonhosted.org/packages/8c/b6/a81291350f864f8c2bf58c1d413b2fdce24cc57cc0866f71b23e2f3406b3/pylibseekdb-1.0.0.post1-cp313-cp313-manylinux_2_28_x86_64.whl", hash = "sha256:e12ac23e8409fdb7785d8054ff4361910e761540ab7eafede9aa464e7dbc1ac7", size = 80346064, upload-time = "2025-11-17T11:01:38.447Z" },
+    { url = "https://files.pythonhosted.org/packages/bb/f9/4b83f9118a2884be01e09362fa9963f6e7892fd4bed326059445072485c6/pylibseekdb-1.0.0.post1-cp313-cp313t-manylinux_2_28_aarch64.whl", hash = "sha256:82d2c56dbce6d41f2059cd4285292f00bf801eb6f5c36df12ab30eb18c714070", size = 59927878, upload-time = "2025-11-17T11:31:28.833Z" },
+    { url = "https://files.pythonhosted.org/packages/b1/93/28c9ff560032b7e7fe2fb5e76979b482c75de516838775c956b3999b00c5/pylibseekdb-1.0.0.post1-cp313-cp313t-manylinux_2_28_x86_64.whl", hash = "sha256:7249a82f55e1e8f4c13c0f6a1a773fa95902d8e2334c674491e601b2efbcc89b", size = 80349282, upload-time = "2025-11-17T11:01:43.298Z" },
+    { url = "https://files.pythonhosted.org/packages/ea/0b/0084a0d78deb0dfc6ff36b4f6ae64c091398a2e3ef3ee7b3db0d8d78e115/pylibseekdb-1.0.0.post1-cp314-cp314-manylinux_2_28_aarch64.whl", hash = "sha256:c1113b6b6579a8743cb6dcceed3a21473713c988cab91650c85e01d58682a4b7", size = 59929351, upload-time = "2025-11-17T11:31:38.231Z" },
+    { url = "https://files.pythonhosted.org/packages/8a/f1/615f960f70f5b8caf512f8c32c93b4677fa638da2d8ed2bc792d1fb76264/pylibseekdb-1.0.0.post1-cp314-cp314-manylinux_2_28_x86_64.whl", hash = "sha256:fb8b195338f42a0c5d021b0ad67aad342348167adacdb500eadd3c649a93d485", size = 80353322, upload-time = "2025-11-17T11:01:47.772Z" },
+    { url = "https://files.pythonhosted.org/packages/9d/7f/a3c81ef9c4fab8f2c8d48d7a184100c59e70f384310ddbb12a135d6ec082/pylibseekdb-1.0.0.post1-cp314-cp314t-manylinux_2_28_aarch64.whl", hash = "sha256:4cdb0b11e64b465c77dc52a76ec46ab9ff85eba2c5af7ef5f2a4001288e1c49a", size = 59935108, upload-time = "2025-11-17T11:31:46.795Z" },
+    { url = "https://files.pythonhosted.org/packages/cc/24/2dfc7721493e492e50d29cda9fee99360a39334b6e63aef0f9895cb9be8c/pylibseekdb-1.0.0.post1-cp314-cp314t-manylinux_2_28_x86_64.whl", hash = "sha256:9878fb337111d3c3367a936aee61fac34238f0d0901cedf7773d061855407d06", size = 80354154, upload-time = "2025-11-17T11:01:52.224Z" },
+]
+
+[[package]]
+name = "pylibseekdb-runtime"
+version = "1.0.0.post1"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b4/29/e09d802caf35a1fe23b287e9d98f3d65341d8be33e968d28d7aea40ce862/pylibseekdb_runtime-1.0.0.post1-cp310-cp310-manylinux_2_28_aarch64.whl", hash = "sha256:76d709519b3250d3ac1abd7ec74fc5d992f7e83e048d263485b2613aec03f9eb", size = 84224921, upload-time = "2025-11-17T11:32:12.054Z" },
+    { url = "https://files.pythonhosted.org/packages/09/18/7167bef76bd7e4de2b7cddfdc8899484233b2cfc53bc4fb5a3016671d819/pylibseekdb_runtime-1.0.0.post1-cp310-cp310-manylinux_2_28_x86_64.whl", hash = "sha256:8c851e961460ac049606c537e8837391f4ccf84e93e860b2e88301872504b1a8", size = 86367260, upload-time = "2025-11-17T11:02:06.607Z" },
+    { url = "https://files.pythonhosted.org/packages/6d/ef/f7bcd70578041faaa9858d0f5dd0ba6823a7241e3725a5444c8e09d5a396/pylibseekdb_runtime-1.0.0.post1-cp311-cp311-manylinux_2_28_aarch64.whl", hash = "sha256:255974e2d3699647c7dc3c29c5e801b7e02c57d66f908db7e9cc991e7d9f5461", size = 84218840, upload-time = "2025-11-17T11:32:22.64Z" },
+    { url = "https://files.pythonhosted.org/packages/fb/3c/671694b4d1677df6673df221675114f7724695deb4acce3128ebce05373f/pylibseekdb_runtime-1.0.0.post1-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:d488fdb26e6b30aacb43f82dfe0f5495ee3a70aa47f73dfd08cdc044e09284f3", size = 86356153, upload-time = "2025-11-17T11:02:11.347Z" },
+    { url = "https://files.pythonhosted.org/packages/e7/38/00ec070c12cac53cae6f6f937ec6e541631c38765a37de6883e12bbf178d/pylibseekdb_runtime-1.0.0.post1-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:a68e79c7a3b8c2780cf331814412ab0aaaf698a8ad68062d8e7ab1cf07d7773a", size = 84220770, upload-time = "2025-11-17T11:32:35.35Z" },
+    { url = "https://files.pythonhosted.org/packages/e8/16/9e5c8b72da0eabcc69010f3d3b90ab5ab8fcf7333bb44b56985565c1efb4/pylibseekdb_runtime-1.0.0.post1-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:069431907b3c9a142f74dc16f68fa4f4288be4a222ac7b1bb301ee0c3cd91611", size = 86350709, upload-time = "2025-11-17T11:02:16.745Z" },
+    { url = "https://files.pythonhosted.org/packages/6a/43/828c94523b384c0d47aec88d2113202898c02740cae6c926a26317629eed/pylibseekdb_runtime-1.0.0.post1-cp313-cp313-manylinux_2_28_aarch64.whl", hash = "sha256:fa3ca059472c0b0ddf1012ca6ef03150c9cf7d0b31f52753ef0981140ed93b63", size = 84229554, upload-time = "2025-11-17T11:32:45.828Z" },
+    { url = "https://files.pythonhosted.org/packages/13/aa/ac67fe8376af4ecc6619d453692caac2bb3bd6473e3236767baee17c6bc9/pylibseekdb_runtime-1.0.0.post1-cp313-cp313-manylinux_2_28_x86_64.whl", hash = "sha256:d58a30a9ea32238ec7db72bc6c8e199c3e4a2c54ffda039c0fc69573c78afdf8", size = 86347710, upload-time = "2025-11-17T11:02:21.603Z" },
+    { url = "https://files.pythonhosted.org/packages/b7/7b/ad6e1b82f57f24e5bf6aedff61cae60a54ad0ce6994a94df9ab04378ff40/pylibseekdb_runtime-1.0.0.post1-cp313-cp313t-manylinux_2_28_aarch64.whl", hash = "sha256:b491b37347d2e806c9359e6c73ad5c399cd6bf9c3fa7daa8ee0b75b513f486ad", size = 84222093, upload-time = "2025-11-17T11:32:55.587Z" },
+    { url = "https://files.pythonhosted.org/packages/82/e3/74d77fdc385c6b0b9c46ac36c1fe745438af6a23deecca881d5a49f35af0/pylibseekdb_runtime-1.0.0.post1-cp313-cp313t-manylinux_2_28_x86_64.whl", hash = "sha256:82bc2201dde2fd94f60ba7b4e52406602d40feff4301a4f5af82188beb5d9a2c", size = 86365110, upload-time = "2025-11-17T11:02:26.111Z" },
+    { url = "https://files.pythonhosted.org/packages/c0/c4/9e351a8c52c508091c3af1b802b0a66043282669eb8f50007b71b70782ce/pylibseekdb_runtime-1.0.0.post1-cp314-cp314-manylinux_2_28_aarch64.whl", hash = "sha256:57e46c2dec66f255e9a1a34476f5e80348b2ddfaa8ee8b39c6c6509506e45446", size = 84224151, upload-time = "2025-11-17T11:33:05.546Z" },
+    { url = "https://files.pythonhosted.org/packages/ea/23/aa13383e5fb18200dc2bc86c46f0158012f0cbabecd5cfbe3ac4bda064cb/pylibseekdb_runtime-1.0.0.post1-cp314-cp314-manylinux_2_28_x86_64.whl", hash = "sha256:eec0d00d824620b2f36635c12c920a3f3cd03a5509521d8a618a800b1b75ae04", size = 86354643, upload-time = "2025-11-17T11:02:32.552Z" },
+    { url = "https://files.pythonhosted.org/packages/77/bd/73d0525048c30fa2ff18fe4516943095d452e77484a27def88fe8fa17438/pylibseekdb_runtime-1.0.0.post1-cp314-cp314t-manylinux_2_28_aarch64.whl", hash = "sha256:aa2f6be0abdc0b4e35f2971cf96c26a72d1715901b85a7584ed4e395cf999027", size = 84222095, upload-time = "2025-11-17T11:33:15.46Z" },
+    { url = "https://files.pythonhosted.org/packages/0f/3d/22d4bd6cba2fd8093e01cd1246dfee7f970306cf6c60520481135f305eed/pylibseekdb_runtime-1.0.0.post1-cp314-cp314t-manylinux_2_28_x86_64.whl", hash = "sha256:916771f9fc6a613d0b8334f1688eb4519b314cd30a21c5e83096f84a039c7b06", size = 86352963, upload-time = "2025-11-17T11:02:37.896Z" },
+]
+
+[[package]]
 name = "pymdown-extensions"
 version = "10.20.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1196,6 +1241,9 @@ embeddings = [
 mysql = [
     { name = "pymysql" },
 ]
+seekdb = [
+    { name = "pylibseekdb", marker = "sys_platform == 'linux'" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -1214,10 +1262,11 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "any-llm-sdk", marker = "python_full_version >= '3.11' and extra == 'embeddings'", specifier = ">=1.7.0" },
+    { name = "pylibseekdb", marker = "sys_platform == 'linux' and extra == 'seekdb'" },
     { name = "pymysql", marker = "extra == 'mysql'", specifier = ">=1.1.0" },
     { name = "sqlalchemy", specifier = ">=2.0.0,<3.0" },
 ]
-provides-extras = ["embeddings", "mysql"]
+provides-extras = ["embeddings", "mysql", "seekdb"]
 
 [package.metadata.requires-dev]
 dev = [
