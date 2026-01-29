@@ -1,0 +1,36 @@
+"""Unit tests for embedding adapter."""
+
+from __future__ import annotations
+
+import sys
+import types
+from typing import ClassVar
+
+from seekme.embeddings import LLMEmbedder
+
+
+def test_llm_adapter_normalizes_data_response(monkeypatch) -> None:
+    class Item:
+        def __init__(self, embedding):
+            self.embedding = embedding
+
+    class Response:
+        data: ClassVar[list[Item]] = [Item([0.1, 0.2, 0.3]), Item([0.4, 0.5, 0.6])]
+
+    api = types.SimpleNamespace(embedding=lambda *args, **kwargs: Response())
+    monkeypatch.setitem(sys.modules, "any_llm", types.SimpleNamespace(api=api))
+
+    provider = LLMEmbedder(model="test-model", provider="test")
+    embeddings = provider.embed(["a", "b"])
+
+    assert embeddings == [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]]
+
+
+def test_llm_adapter_accepts_list_response(monkeypatch) -> None:
+    api = types.SimpleNamespace(embedding=lambda *args, **kwargs: [[1.0, 2.0]])
+    monkeypatch.setitem(sys.modules, "any_llm", types.SimpleNamespace(api=api))
+
+    provider = LLMEmbedder(model="test-model")
+    embeddings = provider.embed(["x"])
+
+    assert embeddings == [[1.0, 2.0]]

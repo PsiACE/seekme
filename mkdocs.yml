@@ -9,7 +9,8 @@ copyright: Maintained by <a href="https://psiace.com">psiace</a>.
 
 nav:
   - Home: index.md
-  - Modules: modules.md
+  - Guide: guide.md
+  - API: modules.md
 plugins:
   - search
   - mkdocstrings:
