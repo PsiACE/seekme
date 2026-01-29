@@ -23,4 +23,3 @@ def register_defaults() -> None:
     register_db_driver(DEFAULT_DB_DRIVER, _create_sql_database)
     register_vector_store(DEFAULT_VECTOR_STORE, SQLVectorStore)
     register_embedder(DEFAULT_EMBEDDER, LLMEmbedder)
-

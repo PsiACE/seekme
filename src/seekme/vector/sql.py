@@ -1,5 +1,7 @@
 """SQL-backed vector store implementation."""
 
+# ruff: noqa: S608
+
 from __future__ import annotations
 
 import json
@@ -7,11 +9,11 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from .core import VectorStore
 from ..db import Database
 from ..embeddings import Embedder
-from ..errors import ConfigurationError
+from ..errors import EmbeddingNotConfiguredError, InvalidIdentifierError, ValidationError
 from ..types import Document, Ids, Vector, VectorQuery, Vectors
+from .core import VectorStore
 
 _IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
@@ -26,9 +28,9 @@ class SQLVectorStore(VectorStore):
     def create_collection(self, name: str, dimension: int) -> None:
         _validate_identifier(name)
         if dimension <= 0:
-            raise ValueError("dimension must be positive.")
+            raise ValidationError.dimension_must_be_positive()
         self._db.execute(
-            f"""
+            f"""  # noqa: S608
             CREATE TABLE IF NOT EXISTS {name} (
                 id VARCHAR(64) PRIMARY KEY,
                 embedding VECTOR({dimension}) NOT NULL,
@@ -54,9 +56,9 @@ class SQLVectorStore(VectorStore):
         ids_list = list(ids)
         vectors_list = list(vectors)
         if len(ids_list) != len(vectors_list):
-            raise ValueError("ids and vectors length mismatch.")
+            raise ValidationError.ids_vectors_mismatch()
         if metadatas is not None and len(metadatas) != len(ids_list):
-            raise ValueError("metadatas length mismatch.")
+            raise ValidationError.metadatas_mismatch()
         for position, (idx, vector) in enumerate(zip(ids_list, vectors_list)):
             metadata = None
             if metadatas is not None:
@@ -120,12 +122,10 @@ class SQLVectorStore(VectorStore):
 
     def _embed_text(self, query: Document) -> Vector:
         if self._embedder is None:
-            raise ConfigurationError(
-                "Embedding is not configured. Provide an embedder or install extras: pip install 'seekme[embeddings]'"
-            )
+            raise EmbeddingNotConfiguredError()
         embeddings = self._embedder.embed([query])
         if not embeddings:
-            raise ValueError("Embedding result is empty.")
+            raise ValidationError.embedding_empty()
         return embeddings[0]
 
 
@@ -135,7 +135,7 @@ def _vector_literal(vector: Vector) -> str:
 
 def _validate_identifier(name: str) -> None:
     if not _IDENTIFIER_RE.match(name):
-        raise ValueError(f"Invalid identifier: {name}")
+        raise InvalidIdentifierError(name)
 
 
 def _select_fields(return_fields: Sequence[str] | None, include_metadata: bool) -> list[str]:
@@ -153,7 +153,7 @@ def _select_fields(return_fields: Sequence[str] | None, include_metadata: bool) 
         fields.append(field)
         seen.add(field)
     if not fields:
-        raise ValueError("return_fields must include at least one column.")
+        raise ValidationError.return_fields_empty()
     return fields
 
 

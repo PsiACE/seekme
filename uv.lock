@@ -1156,6 +1156,15 @@ wheels = [
 ]
 
 [[package]]
+name = "rpmfile"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5b/1e/ccb1b2f1cc9f3d5351bf0ab9db4db30ca349f7d3b23b2751e4e2fb48e50f/rpmfile-2.1.0.tar.gz", hash = "sha256:0ac2bba89277c7185cb861c9c6d7d0c9a268be5169516dbc6a68f1556a9e3f99", size = 21139, upload-time = "2024-07-24T21:57:46.415Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/27/e4/39aa91edc46e2f7c0939b05468ccebdaa8efbd83c65807d60ccf574916c0/rpmfile-2.1.0-py3-none-any.whl", hash = "sha256:9d180ffffef5ca1377a33eb4af3e2de69dccafe7e10aa20b06d191bd8e8d369c", size = 17483, upload-time = "2024-07-24T21:57:45.074Z" },
+]
+
+[[package]]
 name = "ruff"
 version = "0.14.14"
 source = { registry = "https://pypi.org/simple" }
@@ -1206,6 +1215,7 @@ dev = [
     { name = "pymysql" },
     { name = "pytest" },
     { name = "python-dotenv" },
+    { name = "rpmfile" },
     { name = "ruff" },
     { name = "tox-uv" },
     { name = "ty" },
@@ -1228,6 +1238,7 @@ dev = [
     { name = "pymysql", specifier = ">=1.1.0" },
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "python-dotenv", specifier = ">=1.1.0" },
+    { name = "rpmfile", specifier = ">=1.0.9" },
     { name = "ruff", specifier = ">=0.14.10" },
     { name = "tox-uv", specifier = ">=1.29.0" },
     { name = "ty", specifier = ">=0.0.8" },

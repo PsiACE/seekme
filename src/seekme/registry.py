@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
-from typing import Any
 
 from .db import Database
 from .embeddings import Embedder
-from .errors import ExtensionNotFoundError
+from .errors import ExtensionNotFoundError, InvalidExtensionNameError
 from .vector import VectorStore
 
 DatabaseFactory = Callable[..., Database]
@@ -49,7 +48,7 @@ def get_db_driver(name: str) -> DatabaseFactory:
     try:
         return _db_factories[key]
     except KeyError as exc:  # pragma: no cover - exercised via error path tests
-        raise ExtensionNotFoundError(f"Database driver '{name}' is not registered.") from exc
+        raise ExtensionNotFoundError.database_driver(name) from exc
 
 
 def get_vector_store(name: str) -> VectorStoreFactory:
@@ -59,7 +58,7 @@ def get_vector_store(name: str) -> VectorStoreFactory:
     try:
         return _vector_factories[key]
     except KeyError as exc:  # pragma: no cover - exercised via error path tests
-        raise ExtensionNotFoundError(f"Vector store '{name}' is not registered.") from exc
+        raise ExtensionNotFoundError.vector_store(name) from exc
 
 
 def get_embedder(name: str) -> EmbedderFactory:
@@ -69,7 +68,7 @@ def get_embedder(name: str) -> EmbedderFactory:
     try:
         return _embedder_factories[key]
     except KeyError as exc:  # pragma: no cover - exercised via error path tests
-        raise ExtensionNotFoundError(f"Embedder '{name}' is not registered.") from exc
+        raise ExtensionNotFoundError.embedder(name) from exc
 
 
 def list_db_drivers() -> Iterable[str]:
@@ -105,5 +104,5 @@ def ensure_defaults() -> None:
 def _normalize_name(name: str) -> str:
     value = name.strip().lower()
     if not value:
-        raise ValueError("Extension name must be non-empty.")
+        raise InvalidExtensionNameError()
     return value

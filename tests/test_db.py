@@ -131,4 +131,3 @@ def test_insert_select_update_delete(client: Client, table_cleanup: list[str]) -
 
     rows = client.db.fetch_all("SELECT id FROM seekme_people ORDER BY id")
     assert rows == [{"id": 2}]
-

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 import types
+from typing import ClassVar
 
 from seekme.embeddings import LLMEmbedder
 
@@ -14,7 +15,7 @@ def test_llm_adapter_normalizes_data_response(monkeypatch) -> None:
             self.embedding = embedding
 
     class Response:
-        data = [Item([0.1, 0.2, 0.3]), Item([0.4, 0.5, 0.6])]
+        data: ClassVar[list[Item]] = [Item([0.1, 0.2, 0.3]), Item([0.4, 0.5, 0.6])]
 
     api = types.SimpleNamespace(embedding=lambda *args, **kwargs: Response())
     monkeypatch.setitem(sys.modules, "any_llm", types.SimpleNamespace(api=api))
@@ -33,4 +34,3 @@ def test_llm_adapter_accepts_list_response(monkeypatch) -> None:
     embeddings = provider.embed(["x"])
 
     assert embeddings == [[1.0, 2.0]]
-

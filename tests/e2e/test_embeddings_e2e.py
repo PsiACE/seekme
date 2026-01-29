@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import pytest
+
 from seekme import Client
 from seekme.embeddings import LLMEmbedder
 
 
+@pytest.mark.e2e
 def test_embeddings_end_to_end(
     client: Client,
     table_cleanup: list[str],
