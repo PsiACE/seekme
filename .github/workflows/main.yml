@@ -120,6 +120,33 @@ jobs:
 
 
 
+  embedded-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up the environment
+        uses: ./.github/actions/setup-python-env
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install test dependencies
+        run: uv sync --frozen --extra seekdb --group dev
+
+      - name: Run embedded tests
+        env:
+          SEEKME_DRIVER: seekdb
+          SEEKDB_PATH: /tmp/seekdb.db
+        run: make test
+
+
   check-docs:
     runs-on: ubuntu-latest
     steps:

@@ -8,6 +8,7 @@ import sys
 from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import pytest
 from dotenv import load_dotenv
@@ -45,7 +46,19 @@ def db_name() -> str:
 
 
 @pytest.fixture(scope="session")
-def _ensure_database(db_name: str) -> Iterator[None]:
+def db_driver() -> str:
+    return os.getenv("SEEKME_DRIVER", "sql").strip().lower()
+
+
+def _seekdb_url(path: str, database: str) -> str:
+    return f"seekdb:///{path}?database={database}"
+
+
+@pytest.fixture(scope="session")
+def _ensure_database(db_name: str, db_driver: str) -> Iterator[None]:
+    if db_driver == "seekdb":
+        yield
+        return
     from sqlalchemy import create_engine
 
     engine = create_engine(_database_url(None))
@@ -68,10 +81,33 @@ def _ensure_database(db_name: str) -> Iterator[None]:
 
 
 @pytest.fixture(scope="session")
-def client(db_name: str, _ensure_database: None) -> Iterator[Client]:
+def client(db_name: str, db_driver: str, _ensure_database: None) -> Iterator[Client]:
+    if db_driver == "seekdb":
+        if sys.platform != "linux":
+            pytest.skip("pylibseekdb is only available on Linux.")
+        try:
+            __import__("pylibseekdb")
+        except ImportError:
+            pytest.skip("pylibseekdb is not installed.")
+        path = os.getenv("SEEKDB_PATH")
+        if path is None:
+            with TemporaryDirectory() as tmp_dir:
+                url = _seekdb_url(tmp_dir, db_name)
+                yield from _create_client(url, db_driver="seekdb")
+            return
+        url = _seekdb_url(path, db_name)
+        yield from _create_client(url, db_driver="seekdb")
+        return
     url = _database_url(db_name)
+    yield from _create_client(url, db_driver=None)
+
+
+def _create_client(url: str, db_driver: str | None) -> Iterator[Client]:
     try:
-        instance = Client.from_database_url(url)
+        if db_driver is None:
+            instance = Client.from_database_url(url)
+        else:
+            instance = Client.from_database_url(url, db_driver=db_driver)
         instance.connect()
     except Exception as exc:  # pragma: no cover - requires live database
         pytest.skip(f"SeekDB is not available: {exc}")

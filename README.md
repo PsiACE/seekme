@@ -23,10 +23,12 @@ Optional extras:
 ```bash
 pip install "seekme[mysql]"
 pip install "seekme[embeddings]"
+pip install "seekme[seekdb]"
 ```
 
 Notes:
 - `seekme[embeddings]` requires Python 3.11+ due to provider SDK requirements.
+- `seekme[seekdb]` requires Linux and installs pylibseekdb for embedded mode.
 
 ## Quickstart
 

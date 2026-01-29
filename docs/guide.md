@@ -28,10 +28,12 @@ Optional extras:
 ```bash
 pip install "seekme[mysql]"
 pip install "seekme[embeddings]"
+pip install "seekme[seekdb]"
 ```
 
 Notes:
 - `seekme[embeddings]` requires Python 3.11+ due to provider SDK requirements.
+- `seekme[seekdb]` requires Linux and installs pylibseekdb for embedded mode.
 
 ## Quickstart
 
@@ -72,9 +74,9 @@ results = store.search(
 ### SQL + Vector + Embeddings (optional)
 
 ```python
-from seekme.embeddings import LLMEmbedder
+from seekme.embeddings import RemoteEmbedder
 
-embedder = LLMEmbedder(model="text-embedding-3-small", provider="openai")
+embedder = RemoteEmbedder(model="text-embedding-3-small", provider="openai")
 client = Client(db=client.db, embedder=embedder)
 
 results = client.vector_store.search("docs", query="hello world", top_k=3)
