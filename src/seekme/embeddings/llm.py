@@ -87,6 +87,4 @@ def _from_data_list(data: Any) -> list[Vector]:
     return embeddings
 
 
-LLMEmbedder = RemoteEmbedder
-
-__all__ = ["LLMEmbedder", "RemoteEmbedder"]
+__all__ = ["RemoteEmbedder"]

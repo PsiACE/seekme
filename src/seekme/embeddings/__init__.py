@@ -1,6 +1,6 @@
 """Embedding provider interfaces."""
 
 from .base import Embedder
-from .llm import LLMEmbedder, RemoteEmbedder
+from .llm import RemoteEmbedder
 
-__all__ = ["Embedder", "LLMEmbedder", "RemoteEmbedder"]
+__all__ = ["Embedder", "RemoteEmbedder"]
