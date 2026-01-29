@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from seekme import Client
-from seekme.errors import ConfigurationError
+from seekme.exceptions import ConfigurationError
 
 
 def test_vector_store_search_fields(client: Client, table_cleanup: list[str]) -> None:

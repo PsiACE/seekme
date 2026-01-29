@@ -9,12 +9,7 @@ from sqlalchemy import event, text
 from sqlalchemy.engine import Connection, Engine, Transaction
 from sqlalchemy.exc import SQLAlchemyError
 
-from ...errors import (
-    DatabaseConnectionError,
-    QueryExecutionError,
-    QueryFetchError,
-    TransactionError,
-)
+from ...exceptions import DatabaseError
 from ..core import Database
 
 
@@ -39,7 +34,7 @@ class SQLDatabase(Database):
             try:
                 self._conn = self._engine.connect()
             except SQLAlchemyError as exc:
-                raise DatabaseConnectionError() from exc
+                raise DatabaseError.connection_failed() from exc
 
     def close(self) -> None:
         if self._conn is not None:
@@ -51,7 +46,7 @@ class SQLDatabase(Database):
         try:
             result = conn.execute(text(sql), params or {})
         except SQLAlchemyError as exc:
-            raise QueryExecutionError() from exc
+            raise DatabaseError.execution_failed() from exc
         else:
             return result.rowcount
 
@@ -60,7 +55,7 @@ class SQLDatabase(Database):
         try:
             result = conn.execute(text(sql), params or {})
         except SQLAlchemyError as exc:
-            raise QueryFetchError() from exc
+            raise DatabaseError.fetch_failed() from exc
         else:
             return [dict(row) for row in result.mappings().all()]
 
@@ -70,7 +65,7 @@ class SQLDatabase(Database):
             result = conn.execute(text(sql), params or {})
             row = result.mappings().first()
         except SQLAlchemyError as exc:
-            raise QueryFetchError() from exc
+            raise DatabaseError.fetch_failed() from exc
         else:
             return dict(row) if row else None
 
@@ -80,7 +75,7 @@ class SQLDatabase(Database):
             if self._tx is None and not conn.in_transaction():
                 self._tx = conn.begin()
         except SQLAlchemyError as exc:
-            raise TransactionError("begin") from exc
+            raise DatabaseError.transaction_failed("begin") from exc
 
     def commit(self) -> None:
         conn = self._connection()
@@ -91,7 +86,7 @@ class SQLDatabase(Database):
                 return
             conn.commit()
         except SQLAlchemyError as exc:
-            raise TransactionError("commit") from exc
+            raise DatabaseError.transaction_failed("commit") from exc
 
     def rollback(self) -> None:
         conn = self._connection()
@@ -102,12 +97,12 @@ class SQLDatabase(Database):
                 return
             conn.rollback()
         except SQLAlchemyError as exc:
-            raise TransactionError("rollback") from exc
+            raise DatabaseError.transaction_failed("rollback") from exc
 
     def _connection(self) -> Connection:
         self.connect()
         if self._conn is None:
-            raise DatabaseConnectionError()
+            raise DatabaseError.connection_failed()
         return self._conn
 
     def _install_transaction_hooks(self) -> None:

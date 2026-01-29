@@ -6,7 +6,7 @@ import importlib
 from collections.abc import Sequence
 from typing import Any
 
-from ..errors import EmbeddingResponseError, OptionalDependencyError
+from ..exceptions import ConfigurationError, ValidationError
 from ..types import Document, Vector
 from .base import Embedder
 
@@ -51,7 +51,7 @@ def _load_llm_api():
     try:
         any_llm = importlib.import_module("any_llm")
     except ImportError as exc:  # pragma: no cover - optional dependency
-        raise OptionalDependencyError.embeddings() from exc
+        raise ConfigurationError.missing_optional_dependency("embeddings") from exc
     return any_llm.api
 
 
@@ -64,7 +64,7 @@ def _normalize_embeddings(result: Any) -> list[Vector]:
         return _from_data_list(result.data)
     if isinstance(result, dict) and "embeddings" in result:
         return [[float(x) for x in item] for item in result["embeddings"]]
-    raise EmbeddingResponseError.unsupported_format()
+    raise ValidationError.embedding_response_unsupported()
 
 
 def _from_data_list(data: Any) -> list[Vector]:
@@ -75,7 +75,7 @@ def _from_data_list(data: Any) -> list[Vector]:
         elif hasattr(item, "embedding"):
             embeddings.append([float(x) for x in item.embedding])
         else:
-            raise EmbeddingResponseError.missing_embedding()
+            raise ValidationError.embedding_missing()
     return embeddings
 
 

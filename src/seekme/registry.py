@@ -6,7 +6,7 @@ from collections.abc import Callable, Iterable
 
 from .db import Database
 from .embeddings import Embedder
-from .errors import ExtensionNotFoundError, InvalidExtensionNameError
+from .exceptions import ConfigurationError
 from .vector import VectorStore
 
 DatabaseFactory = Callable[..., Database]
@@ -48,7 +48,7 @@ def get_db_driver(name: str) -> DatabaseFactory:
     try:
         return _db_factories[key]
     except KeyError as exc:  # pragma: no cover - exercised via error path tests
-        raise ExtensionNotFoundError.database_driver(name) from exc
+        raise ConfigurationError.database_driver_not_found(name) from exc
 
 
 def get_vector_store(name: str) -> VectorStoreFactory:
@@ -58,7 +58,7 @@ def get_vector_store(name: str) -> VectorStoreFactory:
     try:
         return _vector_factories[key]
     except KeyError as exc:  # pragma: no cover - exercised via error path tests
-        raise ExtensionNotFoundError.vector_store(name) from exc
+        raise ConfigurationError.vector_store_not_found(name) from exc
 
 
 def get_embedder(name: str) -> EmbedderFactory:
@@ -68,7 +68,7 @@ def get_embedder(name: str) -> EmbedderFactory:
     try:
         return _embedder_factories[key]
     except KeyError as exc:  # pragma: no cover - exercised via error path tests
-        raise ExtensionNotFoundError.embedder(name) from exc
+        raise ConfigurationError.embedder_not_found(name) from exc
 
 
 def list_db_drivers() -> Iterable[str]:
@@ -104,5 +104,5 @@ def ensure_defaults() -> None:
 def _normalize_name(name: str) -> str:
     value = name.strip().lower()
     if not value:
-        raise InvalidExtensionNameError()
+        raise ConfigurationError.invalid_extension_name()
     return value

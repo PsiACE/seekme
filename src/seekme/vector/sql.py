@@ -11,7 +11,7 @@ from typing import Any
 
 from ..db import Database
 from ..embeddings import Embedder
-from ..errors import EmbeddingNotConfiguredError, InvalidIdentifierError, ValidationError
+from ..exceptions import ConfigurationError, ValidationError
 from ..types import Document, Ids, Vector, VectorQuery, Vectors
 from .core import VectorStore
 
@@ -122,7 +122,7 @@ class SQLVectorStore(VectorStore):
 
     def _embed_text(self, query: Document) -> Vector:
         if self._embedder is None:
-            raise EmbeddingNotConfiguredError()
+            raise ConfigurationError.embedding_not_configured()
         embeddings = self._embedder.embed([query])
         if not embeddings:
             raise ValidationError.embedding_empty()
@@ -135,7 +135,7 @@ def _vector_literal(vector: Vector) -> str:
 
 def _validate_identifier(name: str) -> None:
     if not _IDENTIFIER_RE.match(name):
-        raise InvalidIdentifierError(name)
+        raise ValidationError.invalid_identifier(name)
 
 
 def _select_fields(return_fields: Sequence[str] | None, include_metadata: bool) -> list[str]:

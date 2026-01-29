@@ -54,8 +54,7 @@ def load_settings() -> Settings:
     base_dir = Path(os.getenv("SEEKDB_CI_DIR", Path.cwd() / ".seekdb-ci")).resolve()
     rpm_url = os.getenv(
         "SEEKDB_RPM_URL",
-        "https://mirrors.oceanbase.com/community/stable/el/9/x86_64/"
-        "seekdb-1.0.1.0-100000392025122619.el9.x86_64.rpm",
+        "https://mirrors.oceanbase.com/community/stable/el/9/x86_64/seekdb-1.0.1.0-100000392025122619.el9.x86_64.rpm",
     )
     cache_dir = base_dir / "cache"
     rpm_path = cache_dir / "seekdb.rpm"
@@ -109,9 +108,10 @@ def port_open(settings: Settings) -> bool:
         sock.settimeout(0.5)
         try:
             sock.connect((settings.host, settings.port))
-            return True
         except OSError:
             return False
+        else:
+            return True
 
 
 def wait_for_port(settings: Settings) -> None:
@@ -139,11 +139,12 @@ def wait_for_select_one(settings: Settings) -> None:
                 cur.execute("SELECT 1")
                 cur.fetchone()
             conn.close()
-            log("SELECT 1 OK")
-            return
         except pymysql.MySQLError as exc:
             last_error = exc
             time.sleep(1)
+        else:
+            log("SELECT 1 OK")
+            return
     die(f"SELECT 1 failed: {last_error}")
 
 
@@ -154,7 +155,7 @@ def download_rpm(settings: Settings) -> None:
 
     ensure_dir(settings.cache_dir)
     log("Downloading seekdb RPM...")
-    urllib.request.urlretrieve(settings.rpm_url, settings.rpm_path)
+    urllib.request.urlretrieve(settings.rpm_url, settings.rpm_path)  # noqa: S310
     log(f"Downloaded: {settings.rpm_path}")
 
 
@@ -215,11 +216,7 @@ def start_observer(settings: Settings) -> None:
         die("libaio.so.1 not found; install libaio1")
 
     env = os.environ.copy()
-    env["LD_LIBRARY_PATH"] = (
-        f"{ld_path}:{env['LD_LIBRARY_PATH']}"
-        if env.get("LD_LIBRARY_PATH")
-        else ld_path
-    )
+    env["LD_LIBRARY_PATH"] = f"{ld_path}:{env['LD_LIBRARY_PATH']}" if env.get("LD_LIBRARY_PATH") else ld_path
 
     cmd = [
         str(observer_bin(settings)),
@@ -247,7 +244,7 @@ def start_observer(settings: Settings) -> None:
     ]
 
     with log_file(settings).open("ab") as log_fp:
-        proc = subprocess.Popen(
+        proc = subprocess.Popen(  # noqa: S603
             cmd,
             cwd=str(settings.data_dir),
             env=env,
