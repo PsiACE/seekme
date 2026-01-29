@@ -13,6 +13,7 @@ from ...exceptions import ConfigurationError, DatabaseError, ValidationError
 from ..core import Database
 
 _PARAM_RE = re.compile(r":([A-Za-z_][A-Za-z0-9_]*)")
+_IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 _OPENED_PATH: str | None = None
 
 
@@ -42,6 +43,14 @@ class SeekdbDatabase(Database):
         try:
             self._conn = seekdb.connect(database=self._database, autocommit=True)
         except Exception as exc:
+            if _is_unknown_database(exc):
+                _create_database(seekdb, self._database)
+                try:
+                    self._conn = seekdb.connect(database=self._database, autocommit=True)
+                except Exception as retry_exc:
+                    raise DatabaseError.connection_failed() from retry_exc
+                else:
+                    return
             raise DatabaseError.connection_failed() from exc
 
     def close(self) -> None:
@@ -71,7 +80,10 @@ class SeekdbDatabase(Database):
             cursor = conn.cursor()
             cursor.execute(rendered)
             rows = cursor.fetchall()
-            return _normalize_rows(rows, getattr(cursor, "description", None))
+            description = getattr(cursor, "description", None)
+            if not description and rows:
+                description = _infer_description(rendered)
+            return _normalize_rows(rows, description)
         except Exception as exc:
             raise DatabaseError.fetch_failed() from exc
         finally:
@@ -84,7 +96,10 @@ class SeekdbDatabase(Database):
             cursor = conn.cursor()
             cursor.execute(rendered)
             row = cursor.fetchone()
-            return _normalize_row(row, getattr(cursor, "description", None))
+            description = getattr(cursor, "description", None)
+            if not description and row is not None:
+                description = _infer_description(rendered)
+            return _normalize_row(row, description)
         except Exception as exc:
             raise DatabaseError.fetch_failed() from exc
         finally:
@@ -186,6 +201,31 @@ def _escape_sql(value: str) -> str:
     return value.replace("'", "''")
 
 
+def _create_database(seekdb: Any, name: str) -> None:
+    _validate_identifier(name)
+    try:
+        conn = seekdb.connect(database="test", autocommit=True)
+    except Exception as exc:
+        raise DatabaseError.connection_failed() from exc
+    try:
+        cursor = conn.cursor()
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{name}`")
+    except Exception as exc:
+        raise DatabaseError.execution_failed() from exc
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def _is_unknown_database(exc: Exception) -> bool:
+    return "Unknown database" in str(exc)
+
+
+def _validate_identifier(name: str) -> None:
+    if not _IDENTIFIER_RE.match(name):
+        raise ValidationError.invalid_identifier(name)
+
+
 def _normalize_rows(rows: Any, description: Any) -> list[Mapping[str, Any]]:
     if rows is None:
         return []
@@ -202,6 +242,37 @@ def _normalize_row(row: Any, description: Any) -> Mapping[str, Any] | None:
         return row if isinstance(row, dict) else {"value": row}
     columns = [col[0] for col in description]
     return dict(zip(columns, row, strict=False))
+
+
+def _infer_description(sql: str) -> list[tuple[str]]:
+    match = re.search(r"SELECT\s+(.+?)\s+FROM", sql, flags=re.IGNORECASE | re.DOTALL)
+    if not match:
+        return [("value",)]
+    select_clause = match.group(1).strip()
+    parts: list[str] = []
+    depth = 0
+    current = ""
+    for char in select_clause:
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+        elif char == "," and depth == 0:
+            parts.append(current.strip())
+            current = ""
+            continue
+        current += char
+    if current:
+        parts.append(current.strip())
+    column_names: list[str] = []
+    for part in parts:
+        as_match = re.search(r"\s+AS\s+(\w+)", part, re.IGNORECASE)
+        if as_match:
+            column_names.append(as_match.group(1))
+            continue
+        raw = part.replace("`", "").strip()
+        column_names.append(raw.split()[-1])
+    return [(name,) for name in column_names]
 
 
 __all__ = ["SeekdbDatabase"]
