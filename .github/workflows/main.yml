@@ -68,10 +68,14 @@ jobs:
         run: uv run python -m pytest -m "not e2e" tests
 
       - name: Run e2e tests
-        if: matrix.python-version == '3.11' && secrets.DASHSCOPE_API_KEY != ''
+        if: matrix.python-version == '3.11'
         env:
           LLM_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
         run: |
+          if [ -z "$LLM_API_KEY" ]; then
+            echo "DASHSCOPE_API_KEY is not set; skipping e2e embedding tests."
+            exit 0
+          fi
           echo "LLM_API_KEY=$LLM_API_KEY" >> .env
           uv run python -m pytest -m e2e tests/e2e
 
