@@ -6,7 +6,7 @@ import importlib
 from collections.abc import Sequence
 from typing import Any
 
-from ..exceptions import ConfigurationError, ValidationError
+from ..exceptions import ConfigurationError, EmbeddingError, ValidationError
 from ..types import Document, Vector
 from .base import Embedder
 
@@ -35,16 +35,24 @@ class LLMEmbedder(Embedder):
         if not texts:
             return []
         api = _load_llm_api()
-        result = api.embedding(
-            self._model,
-            list(texts),
-            provider=self._provider,
-            api_key=self._api_key,
-            api_base=self._api_base,
-            client_args=self._client_args,
-            **self._kwargs,
-        )
-        return _normalize_embeddings(result)
+        try:
+            result = api.embedding(
+                self._model,
+                list(texts),
+                provider=self._provider,
+                api_key=self._api_key,
+                api_base=self._api_base,
+                client_args=self._client_args,
+                **self._kwargs,
+            )
+        except Exception as exc:  # pragma: no cover - depends on provider runtime
+            raise EmbeddingError.request_failed() from exc
+        try:
+            return _normalize_embeddings(result)
+        except ValidationError:
+            raise
+        except Exception as exc:  # pragma: no cover - defensive parsing error
+            raise EmbeddingError.response_failed() from exc
 
 
 def _load_llm_api():

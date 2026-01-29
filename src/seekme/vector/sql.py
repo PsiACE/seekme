@@ -62,7 +62,7 @@ class SQLVectorStore(VectorStore):
         for position, (idx, vector) in enumerate(zip(ids_list, vectors_list)):
             metadata = None
             if metadatas is not None:
-                metadata = json.dumps(metadatas[position])
+                metadata = _dump_metadata(metadatas[position])
             self._db.execute(
                 f"""
                 INSERT INTO {collection} (id, embedding, metadata)
@@ -91,8 +91,6 @@ class SQLVectorStore(VectorStore):
         include_metadata: bool = True,
     ) -> list[Mapping[str, Any]]:
         _validate_identifier(collection)
-        if where:
-            raise NotImplementedError("where filtering is not implemented yet.")
         if top_k <= 0:
             return []
         vector = self._resolve_query(query)
@@ -105,14 +103,16 @@ class SQLVectorStore(VectorStore):
         else:
             order_by = distance_expr
         select_clause = ", ".join(select_items)
+        where_clause, where_params = _build_where_clause(where)
         return self._db.fetch_all(
             f"""
             SELECT {select_clause}
             FROM {collection}
+            {where_clause}
             ORDER BY {order_by} ASC
             LIMIT :top_k
             """,
-            {"query": _vector_literal(vector), "top_k": top_k},
+            {"query": _vector_literal(vector), "top_k": top_k, **where_params},
         )
 
     def _resolve_query(self, query: VectorQuery) -> Vector:
@@ -155,6 +155,52 @@ def _select_fields(return_fields: Sequence[str] | None, include_metadata: bool) 
     if not fields:
         raise ValidationError.return_fields_empty()
     return fields
+
+
+def _build_where_clause(where: Mapping[str, Any] | None) -> tuple[str, dict[str, Any]]:
+    if not where:
+        return "", {}
+    clauses: list[str] = []
+    params: dict[str, Any] = {}
+    for index, (key, value) in enumerate(where.items()):
+        param_name = f"w{index}"
+        if key == "id":
+            clauses.append(f"id = :{param_name}")
+            params[param_name] = value
+            continue
+        key_name = _normalize_filter_key(key)
+        path_param = f"p{index}"
+        params[path_param] = _json_path(key_name)
+        if value is None:
+            clauses.append(f"JSON_EXTRACT(metadata, :{path_param}) IS NULL")
+            continue
+        params[param_name] = _json_filter_value(key_name, value)
+        clauses.append(f"JSON_EXTRACT(metadata, :{path_param}) = CAST(:{param_name} AS JSON)")
+    return "WHERE " + " AND ".join(clauses), params
+
+
+def _normalize_filter_key(key: Any) -> str:
+    if not isinstance(key, str) or not key:
+        raise ValidationError.invalid_filter_key(str(key))
+    return key
+
+
+def _json_path(key: str) -> str:
+    return "$." + json.dumps(key)
+
+
+def _json_filter_value(name: str, value: Any) -> str:
+    try:
+        return json.dumps(value)
+    except (TypeError, ValueError) as exc:
+        raise ValidationError.invalid_filter_value(name) from exc
+
+
+def _dump_metadata(value: Any) -> str:
+    try:
+        return json.dumps(value)
+    except (TypeError, ValueError) as exc:
+        raise ValidationError.metadata_serialization_failed() from exc
 
 
 __all__ = ["SQLVectorStore"]
