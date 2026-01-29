@@ -27,12 +27,14 @@ Optional extras:
 
 ```bash
 pip install "seekme[mysql]"
-pip install "seekme[embeddings]"
+pip install "seekme[remote-embeddings]"
+pip install "seekme[local-embeddings]"
 pip install "seekme[seekdb]"
 ```
 
 Notes:
-- `seekme[embeddings]` requires Python 3.11+ due to provider SDK requirements.
+- `seekme[remote-embeddings]` requires Python 3.11+ due to provider SDK requirements.
+- `seekme[local-embeddings]` installs sentence-transformers.
 - `seekme[seekdb]` requires Linux and installs pylibseekdb for embedded mode.
 
 ## Quickstart
@@ -82,6 +84,26 @@ client = Client(db=client.db, embedder=embedder)
 results = client.vector_store.search("docs", query="hello world", top_k=3)
 ```
 
+### SQL + Vector + Local Embeddings (optional)
+
+```python
+from seekme.embeddings import LocalEmbedder
+
+embedder = LocalEmbedder(model="sentence-transformers/paraphrase-MiniLM-L3-v2")
+client = Client(db=client.db, embedder=embedder)
+
+results = client.vector_store.search("docs", query="hello world", top_k=3)
+```
+
+`LocalEmbedder` uses `sentence-transformers` and accepts either a model name or a local path.
+
+### Embedded seekdb (optional)
+
+```python
+client = Client.from_database_url("seekdb:////tmp/seekdb.db?database=seekme_test", db_driver="seekdb")
+client.connect()
+```
+
 ## Vector Search Options
 
 `search()` supports explicit result controls:
@@ -123,3 +145,30 @@ def create_custom_db(url: str, **kwargs):
 
 register_db_driver("custom", create_custom_db)
 ```
+
+## Testing
+
+seekme tests are strict about environment configuration. Use `.env.test.example` as a template and
+set only the variables that match your target runtime.
+
+Remote mode (MySQL):
+
+- `SEEKME_TEST_DB_MODE=remote`
+- `SEEKME_TEST_DB_URL` or
+  `SEEKME_TEST_DB_HOST/SEEKME_TEST_DB_PORT/SEEKME_TEST_DB_USER/SEEKME_TEST_DB_PASSWORD/SEEKME_TEST_DB_NAME`
+
+Embedded mode:
+
+- `SEEKME_TEST_DB_MODE=embedded`
+- `SEEKME_TEST_SEEKDB_PATH` (optional)
+
+Local embeddings:
+
+- `SEEKME_TEST_LOCAL_EMBEDDING=1`
+- `SEEKME_TEST_LOCAL_MODEL`
+
+Remote embeddings (e2e):
+
+- `SEEKME_TEST_REMOTE_EMBEDDING=1`
+- `SEEKME_TEST_REMOTE_API_KEY`
+- optional `SEEKME_TEST_REMOTE_MODEL/SEEKME_TEST_REMOTE_PROVIDER/SEEKME_TEST_REMOTE_API_BASE`

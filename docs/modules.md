@@ -10,4 +10,8 @@
 
 ::: seekme.embeddings.base
 
+::: seekme.embeddings.remote
+
+::: seekme.embeddings.local
+
 ::: seekme.registry
