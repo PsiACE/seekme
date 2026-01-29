@@ -212,7 +212,7 @@ def _env_flag(name: str) -> bool:
 
 
 @pytest.fixture()
-def local_embedder_mock(monkeypatch) -> LocalEmbedder:
+def local_embedder_mock(monkeypatch) -> tuple[LocalEmbedder, dict[str, object]]:
     calls: dict[str, object] = {}
 
     class DummyOutputs:
@@ -241,5 +241,4 @@ def local_embedder_mock(monkeypatch) -> LocalEmbedder:
         normalize=True,
         batch_size=4,
     )
-    embedder._debug_calls = calls
-    return embedder
+    return embedder, calls

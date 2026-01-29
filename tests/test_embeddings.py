@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 import types
-from typing import ClassVar
+from typing import ClassVar, cast
 
 import pytest
 
@@ -55,9 +55,11 @@ def test_remote_adapter_wraps_provider_error(monkeypatch) -> None:
         provider.embed(["x"])
 
 
-def test_local_embedder_returns_vectors(local_embedder_mock: LocalEmbedder) -> None:
-    embeddings = local_embedder_mock.embed(["hello", "world"])
+def test_local_embedder_returns_vectors(local_embedder_mock: tuple[LocalEmbedder, dict[str, object]]) -> None:
+    embedder, calls = local_embedder_mock
+    embeddings = embedder.embed(["hello", "world"])
     assert embeddings == [[1.0, 1.0, 1.0, 1.0], [1.0, 1.0, 1.0, 1.0]]
-    assert local_embedder_mock._debug_calls["model"] == "test-model"
-    assert local_embedder_mock._debug_calls["device"] == "cpu"
-    assert local_embedder_mock._debug_calls["encode"]["normalize_embeddings"] is True
+    assert calls["model"] == "test-model"
+    assert calls["device"] == "cpu"
+    encode_calls = cast(dict[str, object], calls["encode"])
+    assert encode_calls["normalize_embeddings"] is True
