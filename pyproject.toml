@@ -44,7 +44,6 @@ dev = [
 
     "PyMySQL>=1.1.0",
     "python-dotenv>=1.1.0",
-    "rpmfile>=1.0.9",
 
     "ruff>=0.14.10",
     "mkdocs>=1.6.1",

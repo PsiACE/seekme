@@ -43,11 +43,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libaio1
-
       - name: Install test dependencies
         run: uv sync --frozen --extra mysql --extra embeddings --group dev
 
@@ -61,8 +56,45 @@ jobs:
           SEEKDB_TEST_DATABASE=seekme_test
           EOF
 
+      - name: Free disk space
+        uses: kfir4444/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
+
       - name: Start seekdb
-        run: uv run python scripts/ci/seekdb.py start
+        run: |
+          docker run --name seekdb-server -p 2881:2881 -d oceanbase/seekdb:1.0.0.0-100000262025111218
+          sleep 15
+          docker logs seekdb-server
+
+      - name: Wait for seekdb
+        run: |
+          uv run python - <<'PY'
+          import time
+          import pymysql
+
+          deadline = time.time() + 60
+          last_error = None
+          while time.time() < deadline:
+            try:
+              conn = pymysql.connect(host="127.0.0.1", port=2881, user="root", password="", connect_timeout=2)
+              with conn.cursor() as cur:
+                cur.execute("SELECT 1")
+                cur.fetchone()
+              conn.close()
+              print("seekdb ready")
+              break
+            except Exception as exc:
+              last_error = exc
+              time.sleep(2)
+          else:
+            raise SystemExit(f"seekdb not ready: {last_error}")
+          PY
 
       - name: Run tests
         run: uv run python -m pytest -m "not e2e" tests
@@ -81,7 +113,7 @@ jobs:
 
       - name: Stop seekdb
         if: always()
-        run: uv run python scripts/ci/seekdb.py stop
+        run: docker rm -f seekdb-server
 
       - name: Check typing
         run: uv run ty check
