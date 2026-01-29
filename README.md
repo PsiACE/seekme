@@ -8,6 +8,10 @@
 
 seekme is an end-to-end seekdb toolchain for AI workflows in-database.
 
+## Disclosure
+
+This is not an official OceanBase library. It was developed by the author while employed at OceanBase, and I hope you enjoy it.
+
 ## Install
 
 ```bash
@@ -61,14 +65,6 @@ client = Client(db=client.db, embedder=embedder)
 results = client.vector_store.search("docs", query="hello world", top_k=3)
 ```
 
-## Design Principles
-
-- End-to-end seekdb toolchain for AI workflows in-database
-- SQL-first and explicit
-- Minimal surface area, no ORM replacement
-- Clear error boundaries and optional dependencies
-- Extensible via registry for custom drivers and stores
-
 ## Documentation
 
 - User guide: https://psiace.github.io/seekme/
@@ -80,3 +76,7 @@ make install
 make check
 make test
 ```
+
+## License
+
+Apache-2.0. See `LICENSE`.
