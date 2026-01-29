@@ -8,11 +8,11 @@ from typing import ClassVar
 
 import pytest
 
-from seekme.embeddings import RemoteEmbedder
+from seekme.embeddings import LocalEmbedder, RemoteEmbedder
 from seekme.exceptions import EmbeddingError
 
 
-def test_llm_adapter_normalizes_data_response(monkeypatch) -> None:
+def test_remote_adapter_normalizes_data_response(monkeypatch) -> None:
     class Item:
         def __init__(self, embedding):
             self.embedding = embedding
@@ -29,7 +29,7 @@ def test_llm_adapter_normalizes_data_response(monkeypatch) -> None:
     assert embeddings == [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]]
 
 
-def test_llm_adapter_accepts_list_response(monkeypatch) -> None:
+def test_remote_adapter_accepts_list_response(monkeypatch) -> None:
     api = types.SimpleNamespace(embedding=lambda *args, **kwargs: [[1.0, 2.0]])
     monkeypatch.setitem(sys.modules, "any_llm", types.SimpleNamespace(api=api))
 
@@ -39,7 +39,7 @@ def test_llm_adapter_accepts_list_response(monkeypatch) -> None:
     assert embeddings == [[1.0, 2.0]]
 
 
-def test_llm_adapter_wraps_provider_error(monkeypatch) -> None:
+def test_remote_adapter_wraps_provider_error(monkeypatch) -> None:
     class ProviderFailure(RuntimeError):
         """Provider failure."""
 
@@ -53,3 +53,11 @@ def test_llm_adapter_wraps_provider_error(monkeypatch) -> None:
 
     with pytest.raises(EmbeddingError, match="Embedding request failed"):
         provider.embed(["x"])
+
+
+def test_local_embedder_returns_vectors(local_embedder_mock: LocalEmbedder) -> None:
+    embeddings = local_embedder_mock.embed(["hello", "world"])
+    assert embeddings == [[1.0, 1.0, 1.0, 1.0], [1.0, 1.0, 1.0, 1.0]]
+    assert local_embedder_mock._debug_calls["model"] == "test-model"
+    assert local_embedder_mock._debug_calls["device"] == "cpu"
+    assert local_embedder_mock._debug_calls["encode"]["normalize_embeddings"] is True
