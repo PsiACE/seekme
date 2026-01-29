@@ -67,6 +67,21 @@ class DatabaseError(SeekMeError):
         return cls(f"Transaction {action} failed.")
 
 
+class EmbeddingError(SeekMeError):
+    """Raised when embedding operations fail."""
+
+    def __init__(self, message: str | None = None) -> None:
+        super().__init__(message or "Embedding operation failed.")
+
+    @classmethod
+    def request_failed(cls) -> EmbeddingError:
+        return cls("Embedding request failed.")
+
+    @classmethod
+    def response_failed(cls) -> EmbeddingError:
+        return cls("Embedding response parsing failed.")
+
+
 class ValidationError(ValueError, SeekMeError):
     """Raised when user input fails validation."""
 
@@ -105,10 +120,23 @@ class ValidationError(ValueError, SeekMeError):
     def embedding_missing(cls) -> ValidationError:
         return cls("Embedding item missing embedding field.")
 
+    @classmethod
+    def invalid_filter_value(cls, name: str) -> ValidationError:
+        return cls(f"Invalid filter value for '{name}'.")
+
+    @classmethod
+    def invalid_filter_key(cls, name: str) -> ValidationError:
+        return cls(f"Invalid filter key: {name}")
+
+    @classmethod
+    def metadata_serialization_failed(cls) -> ValidationError:
+        return cls("Metadata must be JSON serializable.")
+
 
 __all__ = [
     "ConfigurationError",
     "DatabaseError",
+    "EmbeddingError",
     "SeekMeError",
     "ValidationError",
 ]

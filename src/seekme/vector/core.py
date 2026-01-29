@@ -45,6 +45,7 @@ class VectorStore(ABC):
         """Search the vector store and return results.
 
         When return_fields is provided, include_metadata is ignored.
+        include_distance remains effective and adds `_distance` when enabled.
         """
 
 

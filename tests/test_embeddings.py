@@ -6,7 +6,10 @@ import sys
 import types
 from typing import ClassVar
 
+import pytest
+
 from seekme.embeddings import LLMEmbedder
+from seekme.exceptions import EmbeddingError
 
 
 def test_llm_adapter_normalizes_data_response(monkeypatch) -> None:
@@ -34,3 +37,19 @@ def test_llm_adapter_accepts_list_response(monkeypatch) -> None:
     embeddings = provider.embed(["x"])
 
     assert embeddings == [[1.0, 2.0]]
+
+
+def test_llm_adapter_wraps_provider_error(monkeypatch) -> None:
+    class ProviderFailure(RuntimeError):
+        """Provider failure."""
+
+    def _raise(*args, **kwargs):
+        raise ProviderFailure
+
+    api = types.SimpleNamespace(embedding=_raise)
+    monkeypatch.setitem(sys.modules, "any_llm", types.SimpleNamespace(api=api))
+
+    provider = LLMEmbedder(model="test-model")
+
+    with pytest.raises(EmbeddingError, match="Embedding request failed"):
+        provider.embed(["x"])
