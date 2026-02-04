@@ -153,6 +153,34 @@ class ValidationError(ValueError, SeekMeError):
     def missing_sql_parameter(cls, name: str) -> ValidationError:
         return cls(f"Missing SQL parameter: {name}")
 
+    @classmethod
+    def invalid_index_option(cls, name: str, value: object) -> ValidationError:
+        return cls(f"Invalid index option '{name}': {value}")
+
+    @classmethod
+    def invalid_index_property_name(cls, name: str) -> ValidationError:
+        return cls(f"Invalid index property name: {name}")
+
+    @classmethod
+    def invalid_index_property_value(cls, name: str) -> ValidationError:
+        return cls(f"Invalid index property value for '{name}'.")
+
+    @classmethod
+    def unsupported_index_option(cls, name: str, value: object) -> ValidationError:
+        return cls(f"Unsupported index option '{name}': {value}")
+
+    @classmethod
+    def distance_required(cls) -> ValidationError:
+        return cls("Distance must be provided for vector search.")
+
+    @classmethod
+    def unsupported_index_property(cls, index_type: object, name: object) -> ValidationError:
+        return cls(f"Index type '{index_type}' does not support property '{name}'.")
+
+    @classmethod
+    def missing_index_property(cls, index_type: object, name: str) -> ValidationError:
+        return cls(f"Index type '{index_type}' requires property '{name}'.")
+
 
 __all__ = [
     "ConfigurationError",

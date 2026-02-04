@@ -4,16 +4,15 @@ from __future__ import annotations
 
 import importlib
 import os
-import re
 from collections.abc import Mapping
 from typing import Any
 from urllib.parse import parse_qs, unquote, urlparse
 
 from ...exceptions import ConfigurationError, DatabaseError, ValidationError
+from ...identifiers import validate_identifier
 from ..core import Database
 from ._seekdb_sql import infer_select_columns, normalize_row, normalize_rows, render_sql
 
-_IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 _OPENED_PATH: str | None = None
 
 
@@ -178,7 +177,7 @@ def _parse_seekdb_url(url: str) -> tuple[str, str]:
 
 
 def _create_database(seekdb: Any, name: str) -> None:
-    _validate_identifier(name)
+    validate_identifier(name)
     try:
         conn = seekdb.connect(database="test", autocommit=True)
     except Exception as exc:
@@ -195,11 +194,6 @@ def _create_database(seekdb: Any, name: str) -> None:
 
 def _is_unknown_database(exc: Exception) -> bool:
     return "Unknown database" in str(exc)
-
-
-def _validate_identifier(name: str) -> None:
-    if not _IDENTIFIER_RE.match(name):
-        raise ValidationError.invalid_identifier(name)
 
 
 __all__ = ["SeekdbDatabase"]

@@ -4,9 +4,12 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Mapping, Sequence
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from ..types import Ids, VectorQuery, Vectors
+
+if TYPE_CHECKING:
+    from .index import VectorIndexConfig
 
 
 class VectorStore(ABC):
@@ -19,6 +22,14 @@ class VectorStore(ABC):
     @abstractmethod
     def delete_collection(self, name: str) -> None:
         """Delete a vector collection."""
+
+    @abstractmethod
+    def create_vector_index(self, collection: str, index: VectorIndexConfig) -> None:
+        """Create a vector index for a collection."""
+
+    @abstractmethod
+    def delete_vector_index(self, collection: str, name: str) -> None:
+        """Delete a vector index from a collection."""
 
     @abstractmethod
     def upsert(
@@ -37,6 +48,7 @@ class VectorStore(ABC):
         query: VectorQuery,
         top_k: int,
         *,
+        distance: str,
         where: Mapping[str, Any] | None = None,
         return_fields: Sequence[str] | None = None,
         include_distance: bool = True,

@@ -5,17 +5,23 @@
 from __future__ import annotations
 
 import json
-import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
 from ..db import Database
 from ..embeddings import Embedder
 from ..exceptions import ConfigurationError, ValidationError
+from ..identifiers import validate_identifier, validate_index_option
 from ..types import Document, Ids, Vector, VectorQuery, Vectors
 from .core import VectorStore
+from .index import VectorIndexConfig
 
-_IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+_DISTANCE_FUNCTIONS = {
+    "l2": "l2_distance",
+    "cosine": "cosine_distance",
+    "inner_product": "inner_product",
+}
+_DISTANCE_ALIASES = {value: key for key, value in _DISTANCE_FUNCTIONS.items()}
 
 
 class SQLVectorStore(VectorStore):
@@ -26,23 +32,26 @@ class SQLVectorStore(VectorStore):
         self._embedder = embedder
 
     def create_collection(self, name: str, dimension: int) -> None:
-        _validate_identifier(name)
+        validate_identifier(name)
         if dimension <= 0:
             raise ValidationError.dimension_must_be_positive()
-        self._db.execute(
-            f"""  # noqa: S608
-            CREATE TABLE IF NOT EXISTS {name} (
-                id VARCHAR(64) PRIMARY KEY,
-                embedding VECTOR({dimension}) NOT NULL,
-                metadata JSON
-            )
-            """
-        )
+        self._db.execute(_create_collection_sql(name, dimension))
         self._db.commit()
 
     def delete_collection(self, name: str) -> None:
-        _validate_identifier(name)
+        validate_identifier(name)
         self._db.execute(f"DROP TABLE IF EXISTS {name}")
+        self._db.commit()
+
+    def create_vector_index(self, collection: str, index: VectorIndexConfig) -> None:
+        validate_identifier(collection)
+        self._db.execute(index.render_create_sql(collection))
+        self._db.commit()
+
+    def delete_vector_index(self, collection: str, name: str) -> None:
+        validate_identifier(collection)
+        validate_identifier(name)
+        self._db.execute(f"DROP INDEX {name} ON {collection}")
         self._db.commit()
 
     def upsert(
@@ -52,7 +61,7 @@ class SQLVectorStore(VectorStore):
         vectors: Vectors,
         metadatas: Sequence[Mapping[str, Any]] | None = None,
     ) -> None:
-        _validate_identifier(collection)
+        validate_identifier(collection)
         ids_list = list(ids)
         vectors_list = list(vectors)
         if len(ids_list) != len(vectors_list):
@@ -85,17 +94,19 @@ class SQLVectorStore(VectorStore):
         query: VectorQuery,
         top_k: int,
         *,
+        distance: str,
         where: Mapping[str, Any] | None = None,
         return_fields: Sequence[str] | None = None,
         include_distance: bool = True,
         include_metadata: bool = True,
     ) -> list[Mapping[str, Any]]:
-        _validate_identifier(collection)
+        validate_identifier(collection)
         if top_k <= 0:
             return []
         vector = self._resolve_query(query)
         select_fields = _select_fields(return_fields, include_metadata)
-        distance_expr = "l2_distance(embedding, :query)"
+        _, distance_func = _resolve_distance(distance)
+        distance_expr = f"{distance_func}(embedding, :query)"
         select_items = list(select_fields)
         if include_distance:
             select_items.append(f"{distance_expr} AS _distance")
@@ -133,9 +144,40 @@ def _vector_literal(vector: Vector) -> str:
     return json.dumps([float(x) for x in vector], separators=(",", ":"))
 
 
-def _validate_identifier(name: str) -> None:
-    if not _IDENTIFIER_RE.match(name):
-        raise ValidationError.invalid_identifier(name)
+def _create_collection_sql(name: str, dimension: int) -> str:
+    return f"""  # noqa: S608
+    CREATE TABLE IF NOT EXISTS {name} (
+        id VARCHAR(64) PRIMARY KEY,
+        embedding VECTOR({dimension}) NOT NULL,
+        metadata JSON
+    )
+    """
+
+
+def _resolve_distance(distance: str | None) -> tuple[str, str]:
+    if distance is None:
+        raise ValidationError.distance_required()
+    distance_name = _normalize_distance_name(distance)
+    distance_func = _normalize_distance_function(distance)
+    return distance_name, distance_func
+
+
+def _normalize_distance_name(distance: str) -> str:
+    validate_index_option("distance", distance)
+    if distance in _DISTANCE_FUNCTIONS:
+        return distance
+    if distance in _DISTANCE_ALIASES:
+        return _DISTANCE_ALIASES[distance]
+    return distance
+
+
+def _normalize_distance_function(distance: str) -> str:
+    validate_index_option("distance", distance)
+    if distance in _DISTANCE_FUNCTIONS:
+        return _DISTANCE_FUNCTIONS[distance]
+    if distance in _DISTANCE_ALIASES:
+        return distance
+    return distance
 
 
 def _select_fields(return_fields: Sequence[str] | None, include_metadata: bool) -> list[str]:
@@ -147,7 +189,7 @@ def _select_fields(return_fields: Sequence[str] | None, include_metadata: bool) 
     fields = []
     seen: set[str] = set()
     for field in return_fields:
-        _validate_identifier(field)
+        validate_identifier(field)
         if field in seen:
             continue
         fields.append(field)
