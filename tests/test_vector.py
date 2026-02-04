@@ -22,7 +22,7 @@ def test_vector_store_search_fields(client: Client, table_cleanup: list[str]) ->
         metadatas=[{"lang": "en"}, {"lang": "zh"}],
     )
 
-    results = store.search("seekme_vectors", query=[1.0, 0.0, 0.0], top_k=1)
+    results = store.search("seekme_vectors", query=[1.0, 0.0, 0.0], top_k=1, distance="l2")
     assert results
     assert "_distance" in results[0]
     assert "metadata" in results[0]
@@ -32,6 +32,7 @@ def test_vector_store_search_fields(client: Client, table_cleanup: list[str]) ->
         "seekme_vectors",
         query=[1.0, 0.0, 0.0],
         top_k=1,
+        distance="l2",
         return_fields=["id"],
         include_distance=False,
     )
@@ -41,6 +42,7 @@ def test_vector_store_search_fields(client: Client, table_cleanup: list[str]) ->
         "seekme_vectors",
         query=[1.0, 0.0, 0.0],
         top_k=1,
+        distance="l2",
         return_fields=["id"],
         include_distance=True,
     )
@@ -57,7 +59,7 @@ def test_vector_store_requires_embedder_for_text_query(client: Client, table_cle
     table_cleanup.append("seekme_vectors_text")
 
     with pytest.raises(ConfigurationError):
-        store.search("seekme_vectors_text", query="hello", top_k=1)
+        store.search("seekme_vectors_text", query="hello", top_k=1, distance="l2")
 
 
 def test_vector_store_text_query_with_local_embedder(
@@ -79,7 +81,13 @@ def test_vector_store_text_query_with_local_embedder(
         metadatas=[{"lang": "en"}, {"lang": "en"}],
     )
 
-    results = store.search("seekme_vectors_local", query="hello", top_k=1, return_fields=["id"])
+    results = store.search(
+        "seekme_vectors_local",
+        query="hello",
+        top_k=1,
+        distance="l2",
+        return_fields=["id"],
+    )
     assert results
 
 
@@ -100,6 +108,7 @@ def test_vector_store_where_filter_metadata(client: Client, table_cleanup: list[
         "seekme_vectors_filter",
         query=[1.0, 0.0, 0.0],
         top_k=2,
+        distance="l2",
         where={"lang-code": "en"},
         return_fields=["id"],
         include_distance=False,

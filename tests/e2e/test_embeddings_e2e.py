@@ -39,6 +39,6 @@ def test_embeddings_end_to_end(
         metadatas=[{"source": "hello"}, {"source": "world"}],
     )
 
-    results = store.search(table_name, query="hello", top_k=1)
+    results = store.search(table_name, query="hello", top_k=1, distance="l2")
     assert results
     assert "_distance" in results[0]
