@@ -51,13 +51,17 @@ assert row["ok"] == 1
 ```python
 store = client.vector_store
 store.create_collection("docs", dimension=3)
+# Optional: create vector index explicitly
+# from seekme.vector import VectorIndexConfig
+# index = VectorIndexConfig(name="idx_vec", distance="l2", index_type="hnsw", lib="vsag")
+# store.create_vector_index("docs", index)
 store.upsert(
     "docs",
     ids=["v1", "v2"],
     vectors=[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]],
 )
 
-results = store.search("docs", query=[1.0, 0.0, 0.0], top_k=3)
+results = store.search("docs", query=[1.0, 0.0, 0.0], top_k=3, distance="l2")
 ```
 
 ### SQL + Vector + Embeddings
@@ -68,7 +72,7 @@ from seekme.embeddings import LocalEmbedder
 embedder = LocalEmbedder(model="sentence-transformers/paraphrase-MiniLM-L3-v2")
 sdk = Client(db=client.db, embedder=embedder)
 
-results = sdk.vector_store.search("docs", query="hello world", top_k=3)
+results = sdk.vector_store.search("docs", query="hello world", top_k=3, distance="l2")
 ```
 
 ### Embedded seekdb (optional)

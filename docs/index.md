@@ -27,9 +27,13 @@ client.connect()
 
 store = client.vector_store
 store.create_collection("docs", dimension=3)
+# Optional: create vector index explicitly
+# from seekme.vector import VectorIndexConfig
+# index = VectorIndexConfig(name="idx_vec", distance="l2", index_type="hnsw", lib="vsag")
+# store.create_vector_index("docs", index)
 store.upsert("docs", ids=["v1"], vectors=[[1.0, 0.0, 0.0]])
 
-results = store.search("docs", query=[1.0, 0.0, 0.0], top_k=1)
+results = store.search("docs", query=[1.0, 0.0, 0.0], top_k=1, distance="l2")
 ```
 
 ## Use cases
@@ -42,7 +46,7 @@ from seekme.embeddings import LocalEmbedder
 embedder = LocalEmbedder(model="sentence-transformers/paraphrase-MiniLM-L3-v2")
 client = Client(db=client.db, embedder=embedder)
 
-results = client.vector_store.search("docs", query="hello world", top_k=3)
+results = client.vector_store.search("docs", query="hello world", top_k=3, distance="l2")
 ```
 
 ### Embedded seekdb

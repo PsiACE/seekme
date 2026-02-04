@@ -57,6 +57,12 @@ assert row["ok"] == 1
 store = client.vector_store
 store.create_collection("docs", dimension=3)
 
+# Optional: create vector index explicitly
+# from seekme.vector import VectorIndexConfig
+# index = VectorIndexConfig(name="idx_vec", distance="l2", index_type="hnsw", lib="vsag")
+# store.create_vector_index("docs", index)
+# store.delete_vector_index("docs", "idx_vec")
+
 store.upsert(
     "docs",
     ids=["v1", "v2"],
@@ -68,10 +74,40 @@ results = store.search(
     "docs",
     query=[1.0, 0.0, 0.0],
     top_k=1,
+    distance="l2",
     include_distance=True,
     include_metadata=True,
 )
 ```
+
+### Vector Index Lifecycle
+
+Vector indexes are explicitly managed by the caller. Creation and deletion are separate operations.
+
+```python
+from seekme.vector import VectorIndexConfig
+
+store = client.vector_store
+store.create_collection("docs", dimension=3)
+
+index = VectorIndexConfig(name="idx_vec", distance="l2", index_type="hnsw", lib="vsag")
+store.create_vector_index("docs", index)
+
+results = store.search("docs", query=[1.0, 0.0, 0.0], top_k=3, distance="l2")
+
+store.delete_vector_index("docs", "idx_vec")
+```
+
+Supported index types and parameters:
+
+- `hnsw`: optional `m`, `ef_construction`, `ef_search`
+- `ivf_flat`: optional `nlist`, `samples_per_nlist`
+- `ivf_sq8`: optional `nlist`, `samples_per_nlist`
+- `ivf_pq`: requires `m`, optional `nlist`, `samples_per_nlist`
+
+Naming rules:
+
+- `index_type`, `distance`, `lib`, and property keys are lowercase snake_case.
 
 ### SQL + Vector + Embeddings (optional)
 
@@ -81,7 +117,7 @@ from seekme.embeddings import RemoteEmbedder
 embedder = RemoteEmbedder(model="text-embedding-3-small", provider="openai")
 client = Client(db=client.db, embedder=embedder)
 
-results = client.vector_store.search("docs", query="hello world", top_k=3)
+results = client.vector_store.search("docs", query="hello world", top_k=3, distance="l2")
 ```
 
 ### SQL + Vector + Local Embeddings (optional)
@@ -92,7 +128,7 @@ from seekme.embeddings import LocalEmbedder
 embedder = LocalEmbedder(model="sentence-transformers/paraphrase-MiniLM-L3-v2")
 client = Client(db=client.db, embedder=embedder)
 
-results = client.vector_store.search("docs", query="hello world", top_k=3)
+results = client.vector_store.search("docs", query="hello world", top_k=3, distance="l2")
 ```
 
 `LocalEmbedder` uses `sentence-transformers` and accepts either a model name or a local path.
@@ -108,6 +144,7 @@ client.connect()
 
 `search()` supports explicit result controls:
 
+- `distance`: distance metric or function name (required)
 - `include_distance`: include `_distance` in results
 - `include_metadata`: include `metadata` in results
 - `return_fields`: explicit columns to return (overrides `include_metadata`)
@@ -116,6 +153,7 @@ client.connect()
 Notes:
 - `return_fields` must contain real table columns (for example `id`, custom columns).
 - `include_distance` still controls `_distance` even when `return_fields` is set.
+- `distance` is always required. Keep it consistent with the index configuration you chose.
 - `where` performs equality filtering on metadata with any string key.
 - `where` values set to `None` match missing or null.
 - Use SQL directly for complex filters (range/like/logical combinations).
